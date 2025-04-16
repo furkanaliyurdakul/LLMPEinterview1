@@ -1,0 +1,10 @@
+
+Your Responses:
+--------------------------------------
+1. Perceptron employs a kernel trick to enhance its capabilities ✗
+2. They have the capability to model and learn complex nonlinear relationships. (Score: 0.50)
+3. Collecting and preprocessing data ✓
+4. Adoption of Bayesian filtering techniques, Integration of machine learning algorithms into spam filtering (Score: 0.67)
+5. Implementing a Support Vector Machine with a kernel trick to improve classification accuracy. ✓
+
+Total Score: 3.17/5

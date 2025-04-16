@@ -1,0 +1,15 @@
+name: 203338_Parker_Davis
+age: 11
+education_level: Doctorate (Ph.D.)
+major: d
+work_exp: Entry-level
+hobbies: a
+strongest_subject: a
+challenging_subject: s
+ratings: {'Mathematics': 2, 'Language Arts (reading, writing, speaking, listening, critical thinking)': 2, 'English ': 2, 'Science (Biology, Chemistry, Physics)': 2, 'Social Studies (History, Politics, Geography, Economics)': 2, 'Business & Finance': 2, 'Computer Science/Programming': 2, 'Engineering/Technology': 2, 'Health & Medicine': 2, 'Arts & Music': 2, 'Foreign Languages': 2}
+priority_ratings: {'Mastering relevant formulas and equations': 2, 'Understanding interrelationships among various concepts': 2, 'Grasping core concepts and key techniques': 2, 'Applying theory to real-world problems': 2, 'Critically analyzing and evaluating information': 2}
+selected_strategies: ['Concise summaries and comprehensive textbook reviews']
+proficiency_level: Other
+selected_short_goals: ['Develop better problem-solving or analytical abilities']
+selected_long_goals: ['Advance my career or professional skills in this field']
+selected_barriers: ['Difficulty understanding key concepts']

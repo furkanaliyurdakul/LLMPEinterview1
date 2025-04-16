@@ -1,0 +1,43 @@
+{
+    "name": "h",
+    "age": "h",
+    "education_level": "Doctorate (Ph.D.)",
+    "major": "h",
+    "work_exp": "Executive/Leadership",
+    "hobbies": "h",
+    "strongest_subject": "h",
+    "challenging_subject": "h",
+    "ratings": {
+        "Mathematics": 4,
+        "Language Arts (reading, writing, speaking, listening, critical thinking)": 4,
+        "English ": 4,
+        "Science (Biology, Chemistry, Physics)": 4,
+        "Social Studies (History, Politics, Geography, Economics)": 4,
+        "Business & Finance": 4,
+        "Computer Science/Programming": 4,
+        "Engineering/Technology": 4,
+        "Health & Medicine": 4,
+        "Arts & Music": 4,
+        "Foreign Languages": 4
+    },
+    "priority_ratings": {
+        "Mastering relevant formulas and equations": 4,
+        "Understanding interrelationships among various concepts": 4,
+        "Grasping core concepts and key techniques": 4,
+        "Applying theory to real-world problems": 4,
+        "Critically analyzing and evaluating information": 4
+    },
+    "selected_strategies": [
+        "Interactive problem-solving exercises and guided project-based tasks"
+    ],
+    "proficiency_level": "Beginner (I am new to this subject)",
+    "selected_short_goals": [
+        "Achieve higher grades or exam performance"
+    ],
+    "selected_long_goals": [
+        "Pursue personal development and lifelong learning"
+    ],
+    "selected_barriers": [
+        "Limited time or scheduling conflicts"
+    ]
+}

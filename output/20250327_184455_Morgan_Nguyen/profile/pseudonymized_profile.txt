@@ -1,0 +1,15 @@
+name: 184455_Morgan_Nguyen
+age: s
+education_level: Undergraduate (Bachelor's)
+major: s
+work_exp: Senior-level
+hobbies: s
+strongest_subject: s
+challenging_subject: s
+ratings: {'Mathematics': 3, 'Language Arts (reading, writing, speaking, listening, critical thinking)': 3, 'English ': 3, 'Science (Biology, Chemistry, Physics)': 3, 'Social Studies (History, Politics, Geography, Economics)': 3, 'Business & Finance': 3, 'Computer Science/Programming': 3, 'Engineering/Technology': 3, 'Health & Medicine': 3, 'Arts & Music': 3, 'Foreign Languages': 3}
+priority_ratings: {'Mastering relevant formulas and equations': 3, 'Understanding interrelationships among various concepts': 3, 'Grasping core concepts and key techniques': 3, 'Applying theory to real-world problems': 3, 'Critically analyzing and evaluating information': 3}
+selected_strategies: ['Detailed, step-by-step explanations similar to in-depth lectures']
+proficiency_level: Beginner (I am new to this subject)
+selected_short_goals: ['Develop better problem-solving or analytical abilities']
+selected_long_goals: ['Gain admission to a top university or specialized program']
+selected_barriers: ['Lack of quality resources or guidance']
