@@ -1,0 +1,40 @@
+# Python bytecode files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Virtual environments
+venv/
+env/
+.env/
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local development settings
+.env
+.env.local
+
+# Logs
+*.log
+
+# Generated files
+combined_code.txt
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Output directories that may contain sensitive data
+output/
+
+# Temporary files
+*.tmp
