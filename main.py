@@ -285,7 +285,7 @@ elif st.session_state.current_page == "personalized_learning":
         # Import necessary components from Gemini_UI without running the main function
         from Gemini_UI import (
             create_summary_prompt, create_structured_prompt, parse_detailed_student_profile,
-            debug_log, transcribe_audio_from_file, process_ppt_file, client,
+            debug_log, transcribe_audio_from_file, process_ppt_file,
             UPLOAD_DIR_AUDIO, UPLOAD_DIR_PPT, UPLOAD_DIR_PROFILE, TRANSCRIPTION_DIR
         )
 

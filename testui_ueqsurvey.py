@@ -168,3 +168,25 @@ if st.button("Submit Responses"):
         data=response_text,
         file_name="ueq_survey_responses.txt",
         mime="text/plain"    )
+
+st.markdown("#### Extra comment")
+comment_txt = st.text_area(
+    "Anything else you would like to share?",
+    placeholder="Feel free to note technical issues, user‑interface feedback, ideas…",
+    key="extra_comment",
+    height=120,
+)
+
+if st.button("Save comment"):
+    if comment_txt.strip():
+        # keep it in session for later use
+        st.session_state.extra_comment = comment_txt.strip()
+
+        # store on disk next to the UEQ file
+        comment_path = os.path.join(session_manager.ueq_dir, "extra_comment.txt")
+        with open(comment_path, "w", encoding="utf‑8") as f:
+            f.write(st.session_state.extra_comment)
+
+        st.success("Comment saved")
+    else:
+        st.warning("Please enter a comment before saving.")
