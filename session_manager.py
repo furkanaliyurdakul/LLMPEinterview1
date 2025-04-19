@@ -179,6 +179,25 @@ class SessionManager:
             "fake_name": self.session_id.split("_", 1)[1],
             "timestamp": self.session_id.split("_", 1)[0]
         }
+        
+    def save_ueq(self, answers: dict, benchmark: dict,
+                free_text: str | None) -> str:
+        """
+        Store the raw answers (dict q→1‑7), scale means, benchmark grades
+        and an optional comment.  Returns the TXT path.
+        """
+        payload = {
+            "answers": answers,           # e.g. {"q1": 5, …}
+            "scale_means": benchmark["means"],
+            "grades": benchmark["grades"],
+            "comment": free_text or ""
+        }
+
+        path = os.path.join(self.ueq_dir, "ueq_responses.txt")
+        with open(path, "w", encoding="utf‑8") as f:
+            json.dump(payload, f, indent=2)
+
+        return path
 
 # Create a singleton instance
 session_manager = None
