@@ -1,4 +1,9 @@
 import streamlit as st
+import os
+
+from session_manager import get_session_manager
+session_manager = get_session_manager()
+
 st.title("User Experience Questionnaire")
 
 st.markdown("""
@@ -176,47 +181,42 @@ if st.button("Submit Responses"):
     bench = evaluate_ueq(answers_dict)
 
     txt_path = session_manager.save_ueq(
-        answers=answers_dict,
-        benchmark=bench,
-        free_text=st.session_state.get("extra_comment")
+        answers   = answers_dict,
+        benchmark = bench,
+        free_text = st.session_state.get("saved_comment")   # ← not “extra_comment”
     )
-    
+
     # Get the session info for display
     session_info = session_manager.get_session_info()
     fake_name = session_info["fake_name"]
 
     st.success(f"Your responses have been saved with pseudonymized ID: {fake_name}")
-    
-    # Download button
-    st.download_button(
-        label="Download your responses as .txt",
-        data=response_text,
-        file_name="ueq_survey_responses.txt",
-        mime="text/plain"    )
 
 st.markdown("#### Extra comment")
+# --- comment widget -----------------------------------------
 comment_txt = st.text_area(
     "Anything else you would like to share?",
-    placeholder="Feel free to note technical issues, user‑interface feedback, ideas…",
+    placeholder="Feel free to note technical issues, UI feedback, ideas, specific notes, etc.",
     key="extra_comment",
     height=120,
 )
 
+# --- save button --------------------------------------------
 if st.button("Save comment"):
-    if comment_txt.strip():
-        # keep it in session for later use
-        st.session_state.extra_comment = comment_txt.strip()
+    st.session_state["saved_comment"] = comment_txt.strip()
 
-        # store on disk next to the UEQ file
-        comment_path = os.path.join(session_manager.ueq_dir, "extra_comment.txt")
-        with open(comment_path, "w", encoding="utf‑8") as f:
-            f.write(st.session_state.extra_comment)
+    if st.session_state["saved_comment"]:
+        # keep one copy for later use in save_ueq()
+        session_manager.save_ueq(
+        answers   = answers_dict,
+        benchmark = bench,
+        free_text = st.session_state.get("saved_comment")   # ← not “extra_comment”
+    )
 
         st.success("Comment saved")
     else:
         st.warning("Please enter a comment before saving.")
 
-# ------------------------------------------------------------
 # helper ------------------------------------------------------
 def show_ueq_benchmark(responses: dict) -> None:
     """Convert radio answers (1‑7) to –3…+3, compute the six

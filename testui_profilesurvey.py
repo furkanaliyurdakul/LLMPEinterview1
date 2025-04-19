@@ -1,6 +1,5 @@
 import streamlit as st
-
-FAST_TEST_MODE = True
+FAST_TEST_MODE = st.session_state.get("fast_test_mode")
 
 st.title("🎓 Student Profile Survey")
 
@@ -396,9 +395,6 @@ if st.session_state.show_review:
     try:
         st.markdown("---")
         st.header("📄 Review Your Responses")
-        
-        # Debug information
-        st.write(f"Debug - show_review state: {st.session_state.show_review}")
 
         # Access form data from session state
         if 'form_data' not in st.session_state:
@@ -408,77 +404,61 @@ if st.session_state.show_review:
             form_data = st.session_state.form_data
             
             # Prepare the responses as text
-            response = f"""
-            Student Profile Survey Responses:
-            ====================================
+            response = f"""Student Profile Survey Responses:
+====================================
 
-            Section 1: Academic and Background Information
+Section 1: Academic and Background Information
             ---------------------------------------------
-            1. Name: {form_data['name']}
-            2. Age: {form_data['age']}
-            3. Study Background: {form_data['education_level']}
-            4. Major/Area of Study: {form_data['major']}
-            5. Work Experience: {form_data['work_exp']}
-            6. Hobbies and Interests: {form_data['hobbies']}
+1. Name: {form_data['name']}
+2. Age: {form_data['age']}
+3. Study Background: {form_data['education_level']}
+4. Major/Area of Study: {form_data['major']}
+5. Work Experience: {form_data['work_exp']}
+6. Hobbies and Interests: {form_data['hobbies']}
 
-            7. Subject Ratings:
-            """
+7. Subject Ratings:
+"""
 
             for subject, rating in form_data['ratings'].items():
                 response += f"   - {subject}: {rating}/5\n"
 
-        response += f"""
-        8. Strongest Subject or Area: {form_data['strongest_subject']}
-        9. Most Challenging Subject or Area: {form_data['challenging_subject']}
+            response += f"""
+8. Strongest Subject or Area: {form_data['strongest_subject']}
+9. Most Challenging Subject or Area: {form_data['challenging_subject']}
 
-        Section 2: Learning Style Preferred Learning Methods and Assessment
-        -----------------------------------------------------------------
-        10. Learning Priorities (1 = least important, 5 = most important):
-        """
+Section 2: Learning Style Preferred Learning Methods and Assessment
+-----------------------------------------------------------------
+10. Learning Priorities (1 = least important, 5 = most important):
+"""
 
-        for priority, rating in form_data['priority_ratings'].items():
-            response += f"   - {priority}: {rating}/5\n"
+            for priority, rating in form_data['priority_ratings'].items():
+                response += f"   - {priority}: {rating}/5\n"
 
-        response += "\n11. Preferred Learning Strategies:\n"
-        for strategy in form_data['selected_strategies']:
-            response += f"   - {strategy}\n"
+            response += "\n11. Preferred Learning Strategies:\n"
+            for strategy in form_data['selected_strategies']:
+                response += f"   - {strategy}\n"
 
-        response += f"""
-        
-        Section 3: Subject-Specific Proficiency, Goals, and Barriers
-        ----------------------------------------------------------
-        12. Current Proficiency Level: {form_data['proficiency_level']}
-        
-        13. Short-term Academic Goals:
-        """
+            response += f"""
 
-        for goal in form_data['selected_short_goals']:
-            response += f"   - {goal}\n"
+Section 3: Subject-Specific Proficiency, Goals, and Barriers
+----------------------------------------------------------
+12. Current Proficiency Level: {form_data['proficiency_level']}
 
-        response += "\n14. Long-term Academic/Career Goals:\n"
-        for goal in form_data['selected_long_goals']:
-            response += f"   - {goal}\n"
+13. Short-term Academic Goals:
+"""
 
-        response += "\n15. Potential Barriers:\n"
-        for barrier in form_data['selected_barriers']:
-            response += f"   - {barrier}\n"
+            for goal in form_data['selected_short_goals']:
+                response += f"   - {goal}\n"
 
-        st.text_area("Please review your responses below:", value=response, height=500)
+            response += "\n14. Long-term Academic/Career Goals:\n"
+            for goal in form_data['selected_long_goals']:
+                response += f"   - {goal}\n"
 
-        # Download responses as a TXT file
-        st.download_button(
-            label="💾 Download your answers as .txt",
-            data=response,
-            file_name="student_profile_survey_responses.txt",
-            mime="text/plain"
-        )
-        
-        # Add a button to edit responses (reset the form)
-        if st.button("✏️ Edit my responses"):
-            # Clear form data and reset show_review flag
-            if hasattr(st.session_state, 'form_data'):
-                del st.session_state.form_data
-            st.session_state.show_review = False
+            response += "\n15. Potential Barriers:\n"
+            for barrier in form_data['selected_barriers']:
+                response += f"   - {barrier}\n"
+
+            st.text_area("Please review your responses below:", value=response, height=500)
             
     except Exception as e:
         st.error(f"An error occurred in the review section: {str(e)}")

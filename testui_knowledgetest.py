@@ -216,10 +216,3 @@ Total Score: {score:.2f}/5
                 formatted_results += f"<h4>Total Score: {score:.2f}/5</h4>"
                 
                 st.markdown(formatted_results, unsafe_allow_html=True)
-                
-                st.download_button(
-                    label="Download your results",
-                    data=result_summary,
-                    file_name="email_threat_detection_test_results.txt",
-                    mime="text/plain"
-                )
