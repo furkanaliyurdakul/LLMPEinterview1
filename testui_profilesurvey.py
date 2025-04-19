@@ -127,10 +127,10 @@ init_form_field("challenging_subject")
 init_form_field("proficiency_level")
 
 # Question 1 - Open-ended
-name = st.text_input("1. What is your name? *", key="name", help="This field is required")
+name = st.text_input("1. What is your name? *", key="name", help="Write the name you would like us to use during the interview.")
 
 # Question 2 - Open-ended
-age = st.text_input("2. What is your age? *", key="age", help="This field is required")
+age = st.text_input("2. What is your age? *", key="age", help="Whole years only, e.g. 22.")
 
 # Question 3 - Multiple-choice
 education_level = st.radio(
@@ -138,11 +138,11 @@ education_level = st.radio(
     ["Junior High School", "High School", "Undergraduate (Bachelor's)", "Graduate (Master's)", "Doctorate (Ph.D.)", "Other"],
     index=None, 
     key="education_level",
-    help="This rating is required"
+    help="Pick the highest level you have finished so far."
 )
 
 # Question 4 - Open-ended
-major = st.text_input("4. What was your major or primary area of study in your previous education? *", key="major", help="This field is required")
+major = st.text_input("4. What was your major or primary area of study in your previous education? *", key="major", help="Main field of study; one line is enough.")
 
 # Question 5 - Multiple-choice
 work_exp = st.radio(
@@ -150,11 +150,11 @@ work_exp = st.radio(
     ["No work experience", "Entry-level", "Mid-level", "Senior-level", "Executive/Leadership", "Other"],
     index=None, 
     key="work_exp",
-    help="This rating is required"
+    help="Choose the option that best matches your current or most recent role."
 )
 
 # Question 6 - Open-ended
-hobbies = st.text_area("6. What are your hobbies or interests (please specify)? *", key="hobbies", help="This field is required")
+hobbies = st.text_area("6. What are your hobbies or interests (please specify)? *", key="hobbies", help="Short list separated by commas, e.g. chess, hiking.")
 
 # Question 7 - Rating (1-5)
 st.markdown("### 7. Assign a score from 1 to 5 to each subject, where 1 = Weakest and 5 = Strongest *")
@@ -177,11 +177,11 @@ rating_options = [1, 2, 3, 4, 5]
 for subject in subjects:
     # Initialize rating in session state if not already present
     init_form_field(subject)
-    ratings[subject] = st.radio(subject, rating_options, horizontal=True, key=subject, index=None, help="This rating is required")
+    ratings[subject] = st.radio(subject, rating_options, horizontal=True, key=subject, index=None, help="1 = weakest, 5 = strongest. Select one score for each subject.")
 
 # Questions 8 and 9 - Open-ended
-strongest_subject = st.text_input("8. Which subject or area do you consider your strongest? *", key="strongest_subject", help="This field is required")
-challenging_subject = st.text_input("9. Which subject or area do you find most challenging? *", key="challenging_subject", help="This field is required")
+strongest_subject = st.text_input("8. Which subject or area do you consider your strongest? *", key="strongest_subject", help="Type the subject you feel most confident in.")
+challenging_subject = st.text_input("9. Which subject or area do you find most challenging? *", key="challenging_subject", help="Type the subject you find hardest.")
 
 st.markdown("---")
 st.header("Section 2: Learning Style Preferred Learning Methods and Assessment")
@@ -203,7 +203,7 @@ priority_ratings = {}
 for priority in learning_priorities:
     # Initialize priority rating in session state if not already present
     init_form_field(priority)
-    priority_ratings[priority] = st.radio(priority, rating_options, horizontal=True, key=priority, index=None, help="This rating is required")
+    priority_ratings[priority] = st.radio(priority, rating_options, horizontal=True, key=priority, index=None, help="1 = least important to you, 5 = most important.")
 
 # Question 11 - Multiple selection
 st.markdown("### 11. Which learning strategy would you prefer if you had access to a tutor? *")
@@ -227,17 +227,17 @@ for strategy in learning_strategies:
 
 st.markdown("---")
 st.header("Section 3: Subject-Specific Proficiency, Goals, and Barriers")
-
+st.markdown("### 12. What is your current proficiency level in this subject? *")
 # Question 12 - Multiple-choice
 proficiency_level = st.radio(
-    "12. What is your current proficiency level in this subject? *",
+    "Select one",
     ["Beginner (I am new to this subject)", 
      "Intermediate (I have a basic understanding but need improvement)", 
      "Advanced (I have a strong grasp of the subject)", 
      "Other"],
     index=None,
     key="proficiency_level",
-    help="This selection is required"
+    help="Estimate how well you know this course topic right now."
 )
 
 # Question 13 - Multiple selection

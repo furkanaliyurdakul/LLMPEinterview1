@@ -4,6 +4,10 @@ import google.generativeai as genai
 from PIL import Image
 import os
 
+dev_mode = True
+
+TOPIC = "Machine - Learning Techniques for Detecting Email Threats"
+
 # Set page configuration
 st.set_page_config(page_title="Personalized Learning Platform", layout="wide")
 
@@ -103,43 +107,72 @@ if st.session_state.current_page == "home":
     st.title("🎓 Personalized Learning Platform")
     
     st.markdown("""
-    ## Welcome to the Personalized Learning Platform
-    
-    This platform is designed to provide personalized learning experiences based on your profile, 
-    knowledge level, and learning preferences. The platform consists of the following components:
-    
-    1. **Student Profile Survey** - Collects information about your academic background, learning preferences, and goals
-    2. **Personalized Learning** - Provides customized explanations based on your profile and knowledge level
-    3. **Knowledge Test** - Assesses your understanding of the subject matter after learning
-    4. **User Experience Survey** - Gathers feedback about your experience with the platform
-    
-    Please follow the components in the order listed above for the best experience.
-    
-    ### Getting Started
-    
-    Click the button below to start with the Student Profile Survey.
+### Welcome - what this session is about  
+
+You are taking part in our KU Leuven study on **AI-generated, personalised learning explanations**.  
+We want to find out whether explanations that match a learner's background help them understand course material better than generic ones.
+
+In today's session, it will be about **{TOPIC}**.
+
+---
+
+#### What will happen? - step by step  
+
+| Step | What you do | Time | What you provide |
+|------|-------------|------|------------------|
+| 1 | Read & sign the digital consent form | ≈ 2 min | e-signature |
+| 2 | **Student Profile Survey** | ≈ 8 min | background, learning goals |
+| 3 | **(Personalised) Learning** using LLM | ≈ 25 min | questions to the LLM (optional) |
+| 4 | **Knowledge Test** | ≈ 10 min | answers to 5 quiz items |
+| 5 | **User-Experience Questionnaire** | ≈ 8 min | 26 quick ratings |
+| 6 | Short verbal interview / Q&A | ≈ 5 min | feedback |
+
+*Total time*: **~ 60 minutes**
+
+---
+
+#### Your role  
+
+* Work through the steps **in the order shown** (use the sidebar).  
+* Give honest answers - there are no right or wrong responses.  
+* **Ask questions any time** - just speak to the facilitator.
+
+---
+
+#### Why we record your data  
+
+We log your inputs and the system's responses to analyse how well the personalised tutor works.  
+Your name is replaced by a random code ;  
+You may stop at any moment without penalty.
+
+---
+
+When you are ready, click **“Start the Student Profile Survey”** below.  
+Thank you for helping us improve personalised learning!
     """)
+
     
     # Fast Test Mode toggle button (Dev Only)
-    if st.button("Enable Fast Test Mode (Dev Only)"):
-        st.session_state["fast_test_mode"] = True
+    if dev_mode:
+        if st.button("Enable Fast Test Mode (Dev Only)"):
+            st.session_state["fast_test_mode"] = True
 
-        st.session_state.exported_images = ["uploads/ppt/picture/Slide_1 of Lecture8.png"]
-        st.session_state.transcription_text = "This is a mock transcription for fast testing."
-        st.session_state.profile_dict = {
-            "Name": "Test User",
-            "CurrentProficiency": "Intermediate",
-            "StrongestSubject": "Mathematics",
-            "WeakestSubject": "Physics",
-            "PreferredLearningStrategies": ["Detailed, step‑by‑step explanations similar to in‑depth lectures"],
-            "PotentialBarriers": ["Lack of prior knowledge"],
-            "ShortTermGoals": ["Understand core concepts"],
-            "Hobbies": ["Chess", "Reading"],
-            "Major": "Engineering",
-            "LearningPriorities": {"Understanding interrelationships among various concepts": 5, "Applying theory to real-world problems": 5}
-        }
-        st.session_state.selected_slide = "Slide 1"
-        st.rerun()
+            st.session_state.exported_images = ["uploads/ppt/picture/Slide_4 of Lecture8.png"]
+            st.session_state.transcription_text = "This is a mock transcription for fast testing."
+            st.session_state.profile_dict = {
+                "Name": "Test User",
+                "CurrentProficiency": "Intermediate",
+                "StrongestSubject": "Mathematics",
+                "WeakestSubject": "Physics",
+                "PreferredLearningStrategies": ["Detailed, step‑by‑step explanations similar to in‑depth lectures"],
+                "PotentialBarriers": ["Lack of prior knowledge"],
+                "ShortTermGoals": ["Understand core concepts"],
+                "Hobbies": ["Chess", "Reading"],
+                "Major": "Engineering",
+                "LearningPriorities": {"Understanding interrelationships among various concepts": 5, "Applying theory to real-world problems": 5}
+            }
+            st.session_state.selected_slide = "Slide 1"
+            st.rerun()
     
     # Quick navigation button to start the process
     if st.button("Start with Student Profile Survey", use_container_width=True):
@@ -363,7 +396,7 @@ elif st.session_state.current_page == "personalized_learning":
             for msg in st.session_state.messages:
                 with st.chat_message(msg["role"]):
                     st.markdown(msg["content"])
-            user_chat = st.chat_input("Ask a follow‑up…")
+            user_chat = st.chat_input("Ask a follow‑up question or clarification…")
 
             if user_chat:
                 # Gemini:
@@ -379,7 +412,9 @@ elif st.session_state.current_page == "personalized_learning":
 
             # Instead of a text input, we now use a submit button
             if st.session_state.transcription_text and st.session_state.exported_images and "profile_dict" in st.session_state:
-                if st.button("Submit Prompt"):
+                if st.button("Generate personalised explanation",
+                                help="Creates an explanation of the selected slide, adapted to your profile"
+                            ):
                     slide_idx  = int(selected_slide.split()[1]) - 1
                     img_obj    = Image.open(st.session_state.exported_images[slide_idx])
 

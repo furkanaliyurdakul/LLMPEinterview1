@@ -7,7 +7,7 @@ session_manager = get_session_manager()
 st.title("User Experience Questionnaire")
 
 st.markdown("""
-This questionnaire helps evaluate your experience with the tool. For each item, please select a point on the scale that best represents your impression.
+This questionnaire helps us evaluate your experience with the platform. For each item, please select a point on the scale that best represents your impression.
 
 Please decide spontaneously. Don't think too long about your decision to make sure that you convey your original impression.
 
