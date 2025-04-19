@@ -21,17 +21,27 @@ class LearningLogger:
             metadata (dict, optional): Additional metadata about the interaction
         """
         timestamp = datetime.datetime.now().isoformat()
-        
+
+        # Pseudonymize profile if present in user_input
+        pseudonymized_user_input = user_input
+        try:
+            if isinstance(user_input, dict) and "StudentProfile" in user_input:
+                pseudo_profile = user_input["StudentProfile"].copy()
+                session_info = self.session_manager.get_session_info()
+                pseudo_profile["Name"] = session_info["fake_name"]
+                pseudonymized_user_input = user_input.copy()
+                pseudonymized_user_input["StudentProfile"] = pseudo_profile
+        except Exception:
+            pass
+
         log_entry = {
             "timestamp": timestamp,
             "interaction_type": interaction_type,
-            "user_input": user_input,
+            "user_input": pseudonymized_user_input,
             "system_response": system_response,
         }
-        
         if metadata:
             log_entry["metadata"] = metadata
-        
         self.log_entries.append(log_entry)
     
     def save_logs(self):

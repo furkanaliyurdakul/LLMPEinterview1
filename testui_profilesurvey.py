@@ -1,5 +1,7 @@
 import streamlit as st
 
+FAST_TEST_MODE = True
+
 st.title("🎓 Student Profile Survey")
 
 # Initialize session state for form submission and to store form values
@@ -18,10 +20,11 @@ def get_state_value(key, default=None):
     return st.session_state.get(key, default)
 
 # Function to reset form state
-def reset_form_state():
-    for key in list(st.session_state.keys()):
-        if key != 'show_review':
-            del st.session_state[key]
+ def reset_form_state():
+     for key in list(st.session_state.keys()):
+         if key != 'show_review':
+             del st.session_state[key]
++    st.rerun()
 
 # Function to initialize all form fields
 def init_all_form_fields():
@@ -294,76 +297,98 @@ for barrier in barriers:
         selected_barriers.append(barrier)
 
 # Submit button
-if st.button("Submit"):
-    try:
-        # Validate all inputs only when submit is clicked
-        all_fields_filled = (
-            name and age and education_level and major and work_exp and hobbies and 
-            strongest_subject and challenging_subject and
-            all(rating is not None for rating in ratings.values()) and
-            all(rating is not None for rating in priority_ratings.values()) and
-            len(selected_strategies) > 0 and
-            proficiency_level and
-            len(selected_short_goals) > 0 and
-            len(selected_long_goals) > 0 and
-            len(selected_barriers) > 0
-        )
-        
-        if all_fields_filled:
-            # Store current form values in session state
-            st.session_state.form_data = {
-                "name": name,
-                "age": age,
-                "education_level": education_level,
-                "major": major,
-                "work_exp": work_exp,
-                "hobbies": hobbies,
-                "strongest_subject": strongest_subject,
-                "challenging_subject": challenging_subject,
-                "ratings": ratings,
-                "priority_ratings": priority_ratings,
-                "selected_strategies": selected_strategies,
-                "proficiency_level": proficiency_level,
-                "selected_short_goals": selected_short_goals,
-                "selected_long_goals": selected_long_goals,
-                "selected_barriers": selected_barriers
-            }
-            # Save profile data to a file
-            from session_manager import get_session_manager
+submit_button = st.button("Submit", key="submit_profile_survey")
+if submit_button:
+    if "FAST_TEST_MODE" in globals() and FAST_TEST_MODE:
+        st.session_state.form_data = {
+            "name": "Test User",
+            "age": "21",
+            "education_level": "Undergraduate (Bachelor's)",
+            "major": "Engineering",
+            "work_exp": "Entry-level",
+            "hobbies": "Chess, Reading",
+            "strongest_subject": "Mathematics",
+            "challenging_subject": "Physics",
+            "ratings": {"Mathematics": 5, "Language Arts (reading, writing, speaking, listening, critical thinking)": 4, "English ": 4, "Science (Biology, Chemistry, Physics)": 3, "Social Studies (History, Politics, Geography, Economics)": 3, "Business & Finance": 2, "Computer Science/Programming": 5, "Engineering/Technology": 5, "Health & Medicine": 2, "Arts & Music": 3, "Foreign Languages": 3},
+            "priority_ratings": {"Mastering relevant formulas and equations": 5, "Understanding interrelationships among various concepts": 5, "Grasping core concepts and key techniques": 4, "Applying theory to real-world problems": 5, "Critically analyzing and evaluating information": 4},
+            "selected_strategies": ["Detailed, step-by-step explanations similar to in-depth lectures"],
+            "proficiency_level": "Intermediate (I have a basic understanding but need improvement)",
+            "selected_short_goals": ["Understand core concepts", "Achieve higher grades or exam performance"],
+            "selected_long_goals": ["Gain admission to a top university or specialized program"],
+            "selected_barriers": ["Lack of prior knowledge"]
+        }
+        st.session_state.show_review = True
+        st.success("FAST_TEST_MODE enabled: Synthetic profile used. Showing review section...")
+    else:
+        try:
+            # Validate all inputs only when submit is clicked
+            all_fields_filled = (
+                name and age and education_level and major and work_exp and hobbies and 
+                strongest_subject and challenging_subject and
+                all(rating is not None for rating in ratings.values()) and
+                all(rating is not None for rating in priority_ratings.values()) and
+                len(selected_strategies) > 0 and
+                proficiency_level and
+                len(selected_short_goals) > 0 and
+                len(selected_long_goals) > 0 and
+                len(selected_barriers) > 0
+            )
             
-            # Get or create a session manager instance
-            session_manager = get_session_manager()
-            
-            # Save the profile data with pseudonymization
-            original_name = name
-            file_path = session_manager.save_profile(st.session_state.form_data, original_name)
-            
-            # Set the session state flag before any other operations
-            st.session_state.show_review = True
-            # Add a success message to confirm the state change
-            st.success("Form submitted successfully! Showing review section...")
-        else:
-            st.warning("Please fill in all required fields marked with * before submitting.")
-            # For debugging
-            if not name: st.error("Name is required")
-            if not age: st.error("Age is required")
-            if not education_level: st.error("Education level is required")
-            if not major: st.error("Major is required")
-            if not work_exp: st.error("Work experience is required")
-            if not hobbies: st.error("Hobbies are required")
-            if not strongest_subject: st.error("Strongest subject is required")
-            if not challenging_subject: st.error("Challenging subject is required")
-            if not all(rating is not None for rating in ratings.values()): st.error("All subject ratings are required")
-            if not all(rating is not None for rating in priority_ratings.values()): st.error("All learning priority ratings are required")
-            if len(selected_strategies) == 0: st.error("At least one learning strategy is required")
-            if not proficiency_level: st.error("Proficiency level is required")
-            if len(selected_short_goals) == 0: st.error("At least one short-term goal is required")
-            if len(selected_long_goals) == 0: st.error("At least one long-term goal is required")
-            if len(selected_barriers) == 0: st.error("At least one potential barrier is required")
-    except Exception as e:
-        st.error(f"An error occurred during form submission: {str(e)}")
-        import traceback
-        st.error(traceback.format_exc())
+            if all_fields_filled:
+                # Store current form values in session state
+                st.session_state.form_data = {
+                    "name": name,
+                    "age": age,
+                    "education_level": education_level,
+                    "major": major,
+                    "work_exp": work_exp,
+                    "hobbies": hobbies,
+                    "strongest_subject": strongest_subject,
+                    "challenging_subject": challenging_subject,
+                    "ratings": ratings,
+                    "priority_ratings": priority_ratings,
+                    "selected_strategies": selected_strategies,
+                    "proficiency_level": proficiency_level,
+                    "selected_short_goals": selected_short_goals,
+                    "selected_long_goals": selected_long_goals,
+                    "selected_barriers": selected_barriers
+                }
+                # Save profile data to a file
+                from session_manager import get_session_manager
+                
+                # Get or create a session manager instance
+                session_manager = get_session_manager()
+                
+                # Save the profile data with pseudonymization
+                original_name = name
+                file_path = session_manager.save_profile(st.session_state.form_data, original_name)
+                
+                # Set the session state flag before any other operations
+                st.session_state.show_review = True
+                # Add a success message to confirm the state change
+                st.success("Form submitted successfully! Showing review section...")
+            else:
+                st.warning("Please fill in all required fields marked with * before submitting.")
+                # For debugging
+                if not name: st.error("Name is required")
+                if not age: st.error("Age is required")
+                if not education_level: st.error("Education level is required")
+                if not major: st.error("Major is required")
+                if not work_exp: st.error("Work experience is required")
+                if not hobbies: st.error("Hobbies are required")
+                if not strongest_subject: st.error("Strongest subject is required")
+                if not challenging_subject: st.error("Challenging subject is required")
+                if not all(rating is not None for rating in ratings.values()): st.error("All subject ratings are required")
+                if not all(rating is not None for rating in priority_ratings.values()): st.error("All learning priority ratings are required")
+                if len(selected_strategies) == 0: st.error("At least one learning strategy is required")
+                if not proficiency_level: st.error("Proficiency level is required")
+                if len(selected_short_goals) == 0: st.error("At least one short-term goal is required")
+                if len(selected_long_goals) == 0: st.error("At least one long-term goal is required")
+                if len(selected_barriers) == 0: st.error("At least one potential barrier is required")
+        except Exception as e:
+            st.error(f"An error occurred during form submission: {str(e)}")
+            import traceback
+            st.error(traceback.format_exc())
 
 
 # Only show review section after submission

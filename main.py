@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 
-
+FAST_TEST_MODE = True  # Set to True to enable fast testing mode
 
 # Set page configuration
 st.set_page_config(page_title="Personalized Learning Platform", layout="wide")
@@ -19,6 +19,23 @@ if "test_completed" not in st.session_state:
     st.session_state.test_completed = False
 if "ueq_completed" not in st.session_state:
     st.session_state.ueq_completed = False
+
+if FAST_TEST_MODE:
+    st.session_state.exported_images = ["uploads/ppt/picture/Slide_1 of Lecture8.png"]
+    st.session_state.transcription_text = "This is a mock transcription for fast testing."
+    st.session_state.profile_dict = {
+        "Name": "Test User",
+        "CurrentProficiency": "Intermediate",
+        "StrongestSubject": "Mathematics",
+        "WeakestSubject": "Physics",
+        "PreferredLearningStrategies": ["Detailed, step‑by‑step explanations similar to in‑depth lectures"],
+        "PotentialBarriers": ["Lack of prior knowledge"],
+        "ShortTermGoals": ["Understand core concepts"],
+        "Hobbies": ["Chess", "Reading"],
+        "Major": "Engineering",
+        "LearningPriorities": {"Understanding interrelationships among various concepts": 5, "Applying theory to real-world problems": 5}
+    }
+    st.session_state.selected_slide = "Slide 1"
 
 # Function to navigate between pages with restrictions
 def navigate_to(page):
@@ -52,28 +69,33 @@ def navigate_to(page):
 st.sidebar.title("Navigation")
 
 # Home button
-if st.sidebar.button("🏠 Home"):
+if st.sidebar.button("\ud83c\udfe0 Home"):
     navigate_to("home")
+    st.rerun()
 
 # Profile Survey button with completion indicator
 profile_status = "✅" if st.session_state.profile_completed else "⬜"
 if st.sidebar.button(f"{profile_status} Student Profile Survey"):
     navigate_to("profile_survey")
+    st.rerun()
 
 # Personalized Learning button with completion indicator
 learning_status = "✅" if st.session_state.learning_completed else "⬜"
 if st.sidebar.button(f"{learning_status} Personalized Learning"):
     navigate_to("personalized_learning")
+    st.rerun()
 
 # Knowledge Test button with completion indicator
 test_status = "✅" if st.session_state.test_completed else "⬜"
 if st.sidebar.button(f"{test_status} Knowledge Test"):
     navigate_to("knowledge_test")
+    st.rerun()
 
 # UEQ Survey button with completion indicator
 ueq_status = "✅" if st.session_state.ueq_completed else "⬜"
 if st.sidebar.button(f"{ueq_status} User Experience Survey"):
     navigate_to("ueq_survey")
+    st.rerun()
 
 # Main content area
 if st.session_state.current_page == "home":
@@ -96,6 +118,11 @@ if st.session_state.current_page == "home":
     
     Click the button below to start with the Student Profile Survey.
     """)
+    
+    # Fast Test Mode toggle button (Dev Only)
+    if st.button("Enable Fast Test Mode (Dev Only)"):
+        st.session_state["fast_test_mode"] = True
+        st.rerun()
     
     # Quick navigation button to start the process
     if st.button("Start with Student Profile Survey", use_container_width=True):

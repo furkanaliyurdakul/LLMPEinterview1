@@ -15,7 +15,11 @@ UPLOAD_DIR_AUDIO = "uploads/audio"
 UPLOAD_DIR_PPT = "uploads/ppt"
 UPLOAD_DIR_PROFILE = "uploads/profile"
 TRANSCRIPTION_DIR = "transcriptions"
-
+FAST_TEST_MODE = st.session_state.get("fast_test_mode", False)
+if st.sidebar.button("Enable Fast Test Mode (Dev Only)"):
+    st.session_state["fast_test_mode"] = True
+    FAST_TEST_MODE = True
+    st.rerun()
 # Optional: Adjust container styling.
 st.markdown(
     """
@@ -257,7 +261,23 @@ client = genai.Client(api_key=my_api)
 
 def main():
     st.title("Personalized Explanation Generator")
-    
+
+    if FAST_TEST_MODE:
+        st.session_state.exported_images = ["uploads/ppt/picture/Slide_1 of Lecture8.png"]
+        st.session_state.transcription_text = "This is a mock transcription for fast testing."
+        st.session_state.profile_dict = {
+            "Name": "Test User",
+            "CurrentProficiency": "Intermediate",
+            "StrongestSubject": "Mathematics",
+            "WeakestSubject": "Physics",
+            "PreferredLearningStrategies": ["Detailed, step‑by‑step explanations similar to in‑depth lectures"],
+            "PotentialBarriers": ["Lack of prior knowledge"],
+            "ShortTermGoals": ["Understand core concepts"],
+            "Hobbies": ["Chess", "Reading"],
+            "Major": "Engineering",
+            "LearningPriorities": {"Understanding interrelationships among various concepts": 5, "Applying theory to real-world problems": 5}
+        }
+        st.session_state.selected_slide = "Slide 1"
     # Load session-specific profile at startup if it exists
     if "profile_dict" not in st.session_state or not st.session_state.profile_dict:
         try:
@@ -297,6 +317,7 @@ def main():
         if st.sidebar.button("Transcribe Audio"):
             st.session_state.transcription_text = transcribe_audio_from_file(audio_path, debug_log)
             st.sidebar.success("Transcription complete!")
+            st.rerun()
     
     # Process PPT file.
     if ppt_file is not None:
@@ -311,6 +332,7 @@ def main():
                 st.session_state.exported_images = exported_images
             else:
                 st.sidebar.error("No slides were exported.")
+            st.rerun()
     
     # Process Student Profile.
     if profile_file is not None:
@@ -339,6 +361,7 @@ def main():
         
         st.session_state.profile_text = profile_text
         st.session_state.profile_dict = parse_detailed_student_profile(profile_text)
+        st.rerun()
     
     # If PPT processing has occurred, show slide selection in the sidebar.
     if st.session_state.exported_images:
