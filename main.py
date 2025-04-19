@@ -1,10 +1,23 @@
 import streamlit as st
+from google.genai.types import Content, Part
+import google.generativeai as genai
+from PIL import Image
 import os
 
 FAST_TEST_MODE = True  # Set to True to enable fast testing mode
 
 # Set page configuration
 st.set_page_config(page_title="Personalized Learning Platform", layout="wide")
+
+# -------------------------------------------------
+# chat state (put right after your other initialisers)
+# -------------------------------------------------
+if "chat_history" not in st.session_state:
+    # store ready‑to‑send Content objects here
+    st.session_state.chat_history = []          # google.genai.types.Content
+if "latest_user_chat" not in st.session_state:  # helper for the input box
+    st.session_state.latest_user_chat = ""
+
 
 # Initialize session state variables
 if "current_page" not in st.session_state:
@@ -37,6 +50,10 @@ if FAST_TEST_MODE:
     }
     st.session_state.selected_slide = "Slide 1"
 
+def dict_to_content(d: dict) -> Content:
+    """{"role": "...", "content": "..."} → Content(role, parts[Part(text)])"""
+    return Content(role=d["role"], parts=[Part.from_text(text = d["content"])])
+
 # Function to navigate between pages with restrictions
 def navigate_to(page):
     # Apply navigation restrictions based on completion status
@@ -65,11 +82,13 @@ def navigate_to(page):
         # Always allow access to home
         st.session_state.current_page = page
 
+    st.rerun()
+
 # Sidebar navigation with visual indicators of completion status
 st.sidebar.title("Navigation")
 
 # Home button
-if st.sidebar.button("\ud83c\udfe0 Home"):
+if st.sidebar.button("🏠 Home"):
     navigate_to("home")
     st.rerun()
 
@@ -127,6 +146,7 @@ if st.session_state.current_page == "home":
     # Quick navigation button to start the process
     if st.button("Start with Student Profile Survey", use_container_width=True):
         navigate_to("profile_survey")
+        st.rerun()
 
 elif st.session_state.current_page == "profile_survey":
     # Import and run the profile survey code with forced reload to prevent caching issues
@@ -248,6 +268,7 @@ Section 1: Academic and Background Information
         # Add navigation button to the next step
         if st.button("Continue to Personalized Learning", use_container_width=True):
             navigate_to("personalized_learning")
+            st.rerun()
 
 elif st.session_state.current_page == "personalized_learning":
     # Check if profile is completed
@@ -267,6 +288,14 @@ elif st.session_state.current_page == "personalized_learning":
             debug_log, transcribe_audio_from_file, process_ppt_file, client,
             UPLOAD_DIR_AUDIO, UPLOAD_DIR_PPT, UPLOAD_DIR_PROFILE, TRANSCRIPTION_DIR
         )
+
+        my_api = "AIzaSyCdNS08cjO_lvj35Ytvs8szbUmeAdo4aIA"  # Replace with your actual API key.
+        genai.configure(api_key=my_api)
+
+        if "gemini_chat" not in st.session_state:
+            model = genai.GenerativeModel("gemini-2.0-flash-thinking-exp-01-21")
+            st.session_state.gemini_chat = model.start_chat(history=[])
+        chat = st.session_state.gemini_chat    # convenience handle
         
         # Create directories if they don't exist
         for d in [UPLOAD_DIR_AUDIO, UPLOAD_DIR_PPT, UPLOAD_DIR_PROFILE, TRANSCRIPTION_DIR]:
@@ -336,36 +365,46 @@ elif st.session_state.current_page == "personalized_learning":
             for msg in st.session_state.messages:
                 with st.chat_message(msg["role"]):
                     st.markdown(msg["content"])
-            
+            user_chat = st.chat_input("Ask a follow‑up…")
+
+            if user_chat:
+                # Gemini:
+                reply = chat.send_message(user_chat)      # ↩ returns a response object
+
+                # Streamlit display:
+                st.session_state.messages.extend([
+                    {"role": "user",      "content": user_chat},
+                    {"role": "assistant", "content": reply.text},
+                ])
+                st.rerun()
+
+
             # Instead of a text input, we now use a submit button
             if st.session_state.transcription_text and st.session_state.exported_images and "profile_dict" in st.session_state:
                 if st.button("Submit Prompt"):
-                    slide_index = int(selected_slide.split(" ")[1]) - 1
-                    slide_content = f"Content from {selected_slide} (see slide image)."
+                    slide_idx  = int(selected_slide.split()[1]) - 1
+                    img_obj    = Image.open(st.session_state.exported_images[slide_idx])
 
-                    structured_prompt_json = create_structured_prompt(
-                        slide_content,
+                    structured_prompt = create_structured_prompt(
+                        f"Content from {selected_slide} (see slide image).",
                         st.session_state.transcription_text,
                         st.session_state.profile_dict,
                         selected_slide
                     )
+                    debug_log(structured_prompt)
 
-                    # Optional: debugging structured prompt
-                    debug_log(structured_prompt_json)
+                    # -------- Gemini call (multimodal, retains history) -------------------
+                    reply = chat.send_message([img_obj, structured_prompt])
+                    #  ↑ we pass a *list* with raw PIL.Image + plain string → SDK coerces them
 
-                    # Import PIL here to avoid early import issues
-                    from PIL import Image
-                    response = client.models.generate_content(
-                        model="gemini-2.0-flash-thinking-exp-01-21",
-                        contents=[
-                            Image.open(st.session_state.exported_images[slide_index]),
-                            structured_prompt_json
-                        ]
-                    )
-
-                    summary_prompt = create_summary_prompt(st.session_state.profile_dict, selected_slide)
-                    st.session_state.messages.append({"role": "user", "content": summary_prompt})
-                    st.session_state.messages.append({"role": "assistant", "content": response.text})
+                    # -------- Streamlit display & bookkeeping -----------------------------
+                    summary_prompt = create_summary_prompt(st.session_state.profile_dict,
+                                                        selected_slide)
+                    st.session_state.messages.extend([
+                        {"role": "user",      "content": summary_prompt},
+                        {"role": "assistant", "content": reply.text},
+                    ])
+                    st.session_state.learning_completed = True
                     
                     # Log the interaction using the learning logger
                     from personalized_learning_logger import get_learning_logger
@@ -377,8 +416,8 @@ elif st.session_state.current_page == "personalized_learning":
                     }
                     learning_logger.log_interaction(
                         interaction_type="personalized_explanation",
-                        user_input=structured_prompt_json,
-                        system_response=response.text,
+                        user_input=structured_prompt,
+                        system_response=reply.text,
                         metadata=metadata
                     )
                     # Make sure to save logs after each interaction
@@ -387,6 +426,8 @@ elif st.session_state.current_page == "personalized_learning":
                     
                     # Mark learning as completed after generating at least one explanation
                     st.session_state.learning_completed = True
+
+                    st.rerun()
 
             else:
                 st.info("Please upload and process all files (Audio and PPT) to enable prompt submission.")

@@ -256,8 +256,6 @@ def process_ppt_file(ppt_file_path, debug_log_fn):
     return exported_images
 
 # Set your API key for Google GenAI here.
-my_api = "AIzaSyCdNS08cjO_lvj35Ytvs8szbUmeAdo4aIA"  # Replace with your actual API key.
-client = genai.Client(api_key=my_api)
 
 def main():
     st.title("Personalized Explanation Generator")

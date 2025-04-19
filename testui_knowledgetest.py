@@ -111,7 +111,7 @@ else:
         with col1:
             if st.button("Cancel"):
                 st.session_state.confirm_submission = False
-                st.experimental_rerun()
+                st.rerun()
         with col2:
             if st.button("Confirm Submission"):
                 # For single-choice questions (q1, q3, q5)
