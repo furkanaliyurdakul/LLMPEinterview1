@@ -20,11 +20,11 @@ def get_state_value(key, default=None):
     return st.session_state.get(key, default)
 
 # Function to reset form state
- def reset_form_state():
-     for key in list(st.session_state.keys()):
-         if key != 'show_review':
-             del st.session_state[key]
-+    st.rerun()
+def reset_form_state():
+    for key in list(st.session_state.keys()):
+        if key != 'show_review':
+            del st.session_state[key]
+    st.rerun()
 
 # Function to initialize all form fields
 def init_all_form_fields():
