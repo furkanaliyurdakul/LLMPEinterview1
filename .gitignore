@@ -10,6 +10,7 @@ build/
 
 # Virtual environments
 venv/
+.venv/
 env/
 .env/
 
@@ -35,6 +36,7 @@ Thumbs.db
 
 # Output directories that may contain sensitive data
 output/
+uploads/profile/
 
 # Temporary files
 *.tmp
