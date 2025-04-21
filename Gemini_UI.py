@@ -123,53 +123,63 @@ def create_structured_prompt(
 ) -> str:
     """Gemini JSON prompt – rich variant that references the student profile."""
 
-    prompt = {
-        "Slides": {
-            "content": slide_txt,
-            "usage_hint": f"Reference key concepts from {slide} clearly.",
-        },
-        "Transcript": {
-            "content": transcript,
-            "usage_hint": "Include relevant examples or details from lecture.",
-        },
-        "StudentProfile": profile,
-        "AdaptationOptions": {
-            "UseQuestioningFormat": "Interactive problem‑solving exercises and guided project-based tasks"
-            in profile.get("PreferredLearningStrategies", []),
-            "ProvideStepByStep": "Detailed, step‑by‑step explanations similar to in‑depth lectures"
-            in profile.get("PreferredLearningStrategies", []),
-            "UseAnalogies": profile.get("LearningPriorities", {}).get(
-                "Understanding interrelationships among various concepts", 0
-            )
-            >= 4,
-            "IncludeRealWorldApplications": profile.get("LearningPriorities", {}).get(
-                "Applying theory to real-world problems", 0
-            )
-            >= 4,
-        },
+    # ── new prompt ----------------------------------------------------- #
+    system_msg = (
+        "You are an adaptive teaching assistant. Use the provided context, "
+        "and reply only in Markdown addressed to the student."
+    )
+
+    prompt_dict = {
+        # ── SYSTEM (high‑level reminders) ───────────────────────────────
+        "System": system_msg,
+
+        # ── ROLE & OBJECTIVE ────────────────────────────────────────────
+        "Role": "Personalised Slide‑Tutor",
+        "Objective": (
+            f"Explain *{slide}* in a way that is fitting **for "
+            f"{profile.get('Name','the student')}**."
+        ),
+
+        # ── INSTRUCTIONS / RESPONSE RULES ───────────────────────────────
         "Instructions": {
-            "TailorToStudent": True,
+            "Formatting": (
+                "Return Markdown. Do **not** output JSON or wrap the entire reply in ``` … ```.\n"
+                "If you need to show a code snippet, use fenced code‑blocks "
+                "(```python` … ```). Write math inline as LaTeX ($x^2$)."
+            ),
+            "Tone": "Friendly, concise, expert",
             "Guidelines": [
-                "Adjust language complexity based on student's proficiency.",
-                "Explicitly address student's weakest subject.",
-                "Make explanations relevant to student's major, hobbies, or interests.",
-                "Use student's preferred learning strategies.",
-                "Address potential barriers explicitly to facilitate understanding.",
-                "Use Markdown for math (e.g. x^2, H_2O) – avoid <sup>/<sub> HTML tags.",
+                "Adjust language to the student’s proficiency",
+                "Explicitly tackle the student’s weakest subject",
+                "Link examples to the student’s major / hobbies",
+                "Reflect preferred learning strategies",
+                "Mention potential barriers & short‑term goals",
             ],
-            "ReferenceStrategy": "Directly use Slides and Transcript to ground explanations.",
-            "FormattingRequirements": {
-                "UseMathMarkdown": True,
-                "AvoidHtmlTags": ["<sup>", "<sub>", "<i>", "<b>"],
-                "PreferredFormatting": "Markdown",
+            # optional agentic bits
+            "ToolUse": "No external tools available – rely on context below.",
+        },
+
+        # ── STUDENT PROFILE (for grounding) ─────────────────────────────
+        "StudentProfile": profile,          # ← unchanged dictionary
+
+        # ── CONTEXT ─────────────────────────────────────────────────────
+        "Context": {
+            "Slides": {
+                "content": slide_txt,
+                "usage_hint": f"Pull core concepts from {slide} verbatim when useful."
+            },
+            "Transcript": {
+                "content": transcript,
+                "usage_hint": (
+                    "Use concrete examples or analogies that appear in the lecture."
+                ),
             },
         },
-        "Objective": (
-            "Provide a personalised, student‑specific explanation clearly tailored for "
-            f"{profile.get('Name', 'the student')}."
-        ),
     }
-    return json.dumps(prompt, indent=2)
+
+    # Return pretty‑printed JSON string because `build_prompt()` expects it
+    return json.dumps(prompt_dict, indent=2)
+
 
 
 # ──────────────────────────────────────────────────────────────────────────
