@@ -27,7 +27,7 @@ q1_options = [
     "Perceptron is limited to handling only linearly separable datasets.",
     "Support Vector Machine is restricted to binary classification problems.",
 ]
-q1 = st.radio("Select one answer for question 1:", q1_options, key="q1", index=None)
+q1 = st.radio("Select one answer for question 1:", q1_options, key="knowledge_q1", index=None)
 
 # Question 2 - Kept as multiple choice with checkboxes
 st.markdown(
@@ -40,7 +40,7 @@ q2_options = [
     "They are exclusively employed for image recognition tasks.",
 ]
 q2_selected = [
-    st.checkbox(option, key=f"q2_{i}") for i, option in enumerate(q2_options)
+    st.checkbox(option, key=f"knowledge_q2_{i}") for i, option in enumerate(q2_options)
 ]
 q2 = [option for selected, option in zip(q2_selected, q2_options) if selected]
 
@@ -54,7 +54,7 @@ q3_options = [
     "Performing feature scaling and deploying the model",
     "Evaluating the model and selecting appropriate metrics",
 ]
-q3 = st.radio("Select one answer for question 3:", q3_options, key="q3", index=None)
+q3 = st.radio("Select one answer for question 3:", q3_options, key="knowledge_q3", index=None)
 
 # Question 4 - Kept as multiple choice with checkboxes
 st.markdown(
@@ -67,7 +67,7 @@ q4_options = [
     "Integration of machine learning algorithms into spam filtering",
 ]
 q4_selected = [
-    st.checkbox(option, key=f"q4_{i}") for i, option in enumerate(q4_options)
+    st.checkbox(option, key=f"knowledge_q4_{i}") for i, option in enumerate(q4_options)
 ]
 q4 = [option for selected, option in zip(q4_selected, q4_options) if selected]
 
@@ -81,22 +81,22 @@ q5_options = [
     "Utilizing K-Means Clustering to categorize emails",
     "Adding more CAPTCHAs to verify sender authenticity.",
 ]
-q5 = st.radio("Select one answer for question 5:", q5_options, key="q5", index=None)
+q5 = st.radio("Select one answer for question 5:", q5_options, key="knowledge_q5", index=None)
 
 # Correct Answers
 correct_answers = {
-    "q1": "Support Vector Machine utilizes a kernel trick to handle complex data distributions.",
-    "q2": [
+    "knowledge_q1": "Support Vector Machine utilizes a kernel trick to handle complex data distributions.",
+    "knowledge_q2": [
         "They are comprised of interconnected neurons with adjustable weights",
         "They have the capability to model and learn complex nonlinear relationships.",
     ],
-    "q3": "Collecting and preprocessing data",
-    "q4": [
+    "knowledge_q3": "Collecting and preprocessing data",
+    "knowledge_q4": [
         "Adoption of Bayesian filtering techniques",
         "Introduction of challenge-response systems",
         "Integration of machine learning algorithms into spam filtering",
     ],
-    "q5": "Implementing a Support Vector Machine with a kernel trick to improve classification accuracy.",
+    "knowledge_q5": "Implementing a Support Vector Machine with a kernel trick to improve classification accuracy.",
 }
 
 # Initialize session state for test completion status
@@ -138,16 +138,16 @@ else:
         with col2:
             if st.button("Confirm Submission"):
                 # For single-choice questions (q1, q3, q5)
-                if q1 == correct_answers["q1"]:
+                if q1 == correct_answers["knowledge_q1"]:
                     score += 1
-                if q3 == correct_answers["q3"]:
+                if q3 == correct_answers["knowledge_q3"]:
                     score += 1
-                if q5 == correct_answers["q5"]:
+                if q5 == correct_answers["knowledge_q5"]:
                     score += 1
 
                 # For multiple-choice questions (q2, q4)
                 # Calculate partial credit for q2
-                q2_correct = set(correct_answers["q2"])
+                q2_correct = set(correct_answers["knowledge_q2"])
                 q2_selected = set(q2)
                 q2_score = 0
                 if q2_selected:
@@ -161,7 +161,7 @@ else:
                     score += q2_score
 
                 # Calculate partial credit for q4
-                q4_correct = set(correct_answers["q4"])
+                q4_correct = set(correct_answers["knowledge_q4"])
                 q4_selected = set(q4)
                 q4_score = 0
                 if q4_selected:
@@ -184,11 +184,11 @@ else:
                 result_summary = f"""
 Your Responses:
 --------------------------------------
-1. {q1} {'✓' if q1 == correct_answers['q1'] else '✗'}
+1. {q1} {'✓' if q1 == correct_answers['knowledge_q1'] else '✗'}
 2. {', '.join(q2)} (Score: {q2_score:.2f})
-3. {q3} {'✓' if q3 == correct_answers['q3'] else '✗'}
+3. {q3} {'✓' if q3 == correct_answers['knowledge_q3'] else '✗'}
 4. {', '.join(q4)} (Score: {q4_score:.2f})
-5. {q5} {'✓' if q5 == correct_answers['q5'] else '✗'}
+5. {q5} {'✓' if q5 == correct_answers['knowledge_q5'] else '✗'}
 
 Total Score: {score:.2f}/5
 """
@@ -218,10 +218,10 @@ Total Score: {score:.2f}/5
 
                 # Format the results with colored indicators for correct/incorrect answers
                 formatted_results = "<h4>Question 1:</h4>"
-                formatted_results += f"<p>Your answer: {q1} {'✅' if q1 == correct_answers['q1'] else '❌'}</p>"
-                if q1 != correct_answers["q1"]:
+                formatted_results += f"<p>Your answer: {q1} {'✅' if q1 == correct_answers['knowledge_q1'] else '❌'}</p>"
+                if q1 != correct_answers["knowledge_q1"]:
                     formatted_results += (
-                        f"<p>Correct answer: {correct_answers['q1']}</p>"
+                        f"<p>Correct answer: {correct_answers['knowledge_q1']}</p>"
                     )
 
                 formatted_results += "<h4>Question 2:</h4>"
@@ -230,14 +230,14 @@ Total Score: {score:.2f}/5
                 )
                 if q2_score < 1:
                     formatted_results += (
-                        f"<p>Correct answers: {', '.join(correct_answers['q2'])}</p>"
+                        f"<p>Correct answers: {', '.join(correct_answers['knowledge_q2'])}</p>"
                     )
 
                 formatted_results += "<h4>Question 3:</h4>"
-                formatted_results += f"<p>Your answer: {q3} {'✅' if q3 == correct_answers['q3'] else '❌'}</p>"
-                if q3 != correct_answers["q3"]:
+                formatted_results += f"<p>Your answer: {q3} {'✅' if q3 == correct_answers['knowledge_q3'] else '❌'}</p>"
+                if q3 != correct_answers["knowledge_q3"]:
                     formatted_results += (
-                        f"<p>Correct answer: {correct_answers['q3']}</p>"
+                        f"<p>Correct answer: {correct_answers['knowledge_q3']}</p>"
                     )
 
                 formatted_results += "<h4>Question 4:</h4>"
@@ -246,14 +246,14 @@ Total Score: {score:.2f}/5
                 )
                 if q4_score < 1:
                     formatted_results += (
-                        f"<p>Correct answers: {', '.join(correct_answers['q4'])}</p>"
+                        f"<p>Correct answers: {', '.join(correct_answers['knowledge_q4'])}</p>"
                     )
 
                 formatted_results += "<h4>Question 5:</h4>"
-                formatted_results += f"<p>Your answer: {q5} {'✅' if q5 == correct_answers['q5'] else '❌'}</p>"
-                if q5 != correct_answers["q5"]:
+                formatted_results += f"<p>Your answer: {q5} {'✅' if q5 == correct_answers['knowledge_q5'] else '❌'}</p>"
+                if q5 != correct_answers["knowledge_q5"]:
                     formatted_results += (
-                        f"<p>Correct answer: {correct_answers['q5']}</p>"
+                        f"<p>Correct answer: {correct_answers['knowledge_q5']}</p>"
                     )
 
                 formatted_results += f"<h4>Total Score: {score:.2f}/5</h4>"

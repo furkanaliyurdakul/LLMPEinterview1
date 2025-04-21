@@ -76,6 +76,7 @@ DEFAULTS = {
     "profile_text": "",  # long plain‑text profile
     "profile_dict": {},  # parsed dict version
     "debug_logs": [],  # collected via Gemini_UI.debug_log(...)
+    "messages": []
 }
 
 for k, v in DEFAULTS.items():
@@ -364,7 +365,8 @@ elif st.session_state.current_page == "personalized_learning":
         genai.configure(api_key=API_KEY)
 
         if "gemini_chat" not in st.session_state:
-            model = genai.GenerativeModel("gemini-2.5-pro-exp-03-25")
+            #model = genai.GenerativeModel("gemini-2.5-pro-exp-03-25")
+            model = genai.GenerativeModel("gemini-2.0-flash-thinking-exp-01-21")
             st.session_state.gemini_chat = model.start_chat(history=[])
         chat = st.session_state.gemini_chat
 
