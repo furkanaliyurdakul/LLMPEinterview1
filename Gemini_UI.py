@@ -88,6 +88,36 @@ def debug_log(msg: str) -> None:
 # Prompt builders
 # ──────────────────────────────────────────────────────────────────────────
 
+def make_base_context(profile: dict | None, personalised: bool) -> dict:
+    """
+    Return the immutable context we want to feed Gemini **before every** exchange.
+
+    • The SYSTEM + Formatting rules are included for all runs.  
+    • The StudentProfile is only added when *personalised* is True.
+    """
+    system_msg = (
+        "You are an adaptive teaching assistant. "
+        "Always answer in Markdown, never in JSON or wrapped in triple-backticks."
+    )
+
+    base = {
+        "System": system_msg,
+
+        # universal formatting rules
+        "Instructions": {
+            "Formatting": (
+                "Return Markdown. Do **not** output JSON or wrap the entire reply in "
+                "``` … ```.  If you need to show a code snippet, use fenced code-blocks "
+                "(```python … ```).  Write math inline as LaTeX ($x^2$)."
+            ),
+            "Tone": "Friendly, concise, expert",
+        },
+    }
+
+    if personalised and profile:
+        base["StudentProfile"] = profile     # <- only in that condition
+
+    return base
 
 def create_summary_prompt(profile: dict, slide: str, personalised: bool = True) -> str:
     """Return the user‑facing summary prompt passed to Gemini."""
@@ -333,16 +363,21 @@ def build_prompt(
         return create_structured_prompt(slide_txt, transcript, profile, slide)
 
     base = {
-        "Slides": {"content": slide_txt},
-        "Transcript": {"content": transcript},
+        "System": (
+            "You are a teaching assistant. Reply in Markdown, never JSON."
+        ),
         "Instructions": {
-            "TailorToStudent": False,
-            "Guidelines": [
-                "Explain so that an average under‑grad understands the idea"
-            ],
-            "FormattingRequirements": {"PreferredFormatting": "Markdown"},
+            "Formatting": (
+                "Return Markdown only. Use fenced code-blocks for code and "
+                "write math inline as LaTeX ($x^2$)."
+            ),
+            "Tone": "Friendly, concise, expert"
         },
-        "Objective": f"Give a clear, generic explanation of {slide}",
+        "Context": {
+            "Slides": {"content": slide_txt},
+            "Transcript": {"content": transcript},
+        },
+        "Objective": f"Give a clear, generic explanation of {slide}"
     }
     return json.dumps(base, indent=2)
 

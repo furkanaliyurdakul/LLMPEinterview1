@@ -17,14 +17,13 @@ Relies on :pyfile:`Gemini_UI.py` for all tutor‑specific helpers.
 from __future__ import annotations
 
 import atexit
-
+import json
 import streamlit as st
 
-LABEL: str = (
-    "Personalised" if st.session_state.get("use_personalisation", True) else "Generic"
-)
-st.set_page_config(page_title=f"{LABEL} Learning Platform", layout="wide")
+LABEL: str = "Learning" # internal flag stays in use_personalisation
+st.set_page_config(page_title=f"{LABEL} Platform", layout="wide")
 atexit.register(lambda: get_learning_logger().save_logs(force=True))
+atexit.register(lambda: page_dump(Path(sm.session_dir)))
 
 # ── std‑lib ────────────────────────────────────────────
 import os
@@ -37,6 +36,11 @@ from google.genai.types import Content, Part
 from PIL import Image
 
 # ── local ──────────────────────────────────────────────────────
+# NEW – GDPR docs ------------------------------------------------
+DOCS_DIR   = Path(__file__).parent / "docs"
+INFO_PDF   = DOCS_DIR / "Model informatiebrief AVG English.pdf"
+CONSENT_PDF = DOCS_DIR / "ICF SMEC ENG.pdf"
+
 from Gemini_UI import (
     TRANSCRIPTION_DIR,
     UPLOAD_DIR_AUDIO,
@@ -44,6 +48,7 @@ from Gemini_UI import (
     UPLOAD_DIR_PROFILE,
     build_prompt,
     create_summary_prompt,
+    make_base_context,
     debug_log,
 )
 from Gemini_UI import export_ppt_slides as process_ppt_file  # alias → keep old name
@@ -55,8 +60,16 @@ from Gemini_UI import (
 )
 from personalized_learning_logger import get_learning_logger
 from session_manager import get_session_manager
+from page_timer import start as page_timer_start      # put this with the other imports
+from page_timer import dump as page_dump
 
 sm = get_session_manager()
+
+if "_page_timer" not in st.session_state:
+    from page_timer import start as page_timer_start
+    
+    page_timer_start("home")
+
 
 # ───────────────────────────────────────────────────────────────
 # Globals & constants
@@ -96,6 +109,8 @@ for key in (
 # Helper functions
 # ───────────────────────────────────────────────────────────────
 
+def current_condition() -> str:
+    return "personalised" if st.session_state.get("use_personalisation", True) else "generic"
 
 def dict_to_content(d: Dict[str, str]) -> Content:
     """Convert a dict with *role* & *content* into a Gemini :class:`Content`."""
@@ -132,7 +147,9 @@ def navigate_to(page: str) -> None:
         allowed = True
 
     if allowed:
-        st.session_state.current_page = page
+        page_dump(Path(sm.session_dir))
+        page_timer_start(page)
+        st.session_state.current_page  = page
         st.rerun()
 
 
@@ -144,7 +161,7 @@ st.sidebar.title("Navigation")
 nav_items = [
     ("🏠 Home", "home", True),
     ("Student Profile Survey", "profile_survey", st.session_state.profile_completed),
-    (f"{LABEL} Learning", "personalized_learning", st.session_state.learning_completed),
+    (f"{LABEL}", "personalized_learning", st.session_state.learning_completed),
     ("Knowledge Test", "knowledge_test", st.session_state.test_completed),
     ("User Experience Survey", "ueq_survey", st.session_state.ueq_completed),
 ]
@@ -163,7 +180,7 @@ if st.session_state.current_page == "home":
     # ------------------------------------------------------------------
     # HOME  ─ study intro
     # ------------------------------------------------------------------
-    st.title(f"🎓 {LABEL} Learning Platform")
+    st.title(f"🎓 {LABEL} Platform")
     st.markdown(
         f"""
 ### Welcome – what this session is about  
@@ -178,7 +195,7 @@ In today's session, it will be about **{TOPIC}**.
 |------|-------------|------|------------------|
 | 1 | Read & sign the digital consent form | ≈ 2 min | e‑signature |
 | 2 | **Student Profile Survey** | ≈ 8 min | background, learning goals |
-| 3 | **({LABEL}) Learning** using LLM | ≈ 25 min | questions to the LLM (optional) |
+| 3 | **{LABEL}** using LLM | ≈ 25 min | questions to the LLM (optional) |
 | 4 | **Knowledge Test** | ≈ 10 min | answers to 5 quiz items |
 | 5 | **User‑Experience Questionnaire** | ≈ 8 min | 26 quick ratings |
 | 6 | Short verbal interview / Q&A | ≈ 5 min | feedback |
@@ -201,6 +218,41 @@ When you are ready, click **“Start the Student Profile Survey”** below.
 Thank you for helping us improve personalised learning!
 """
     )
+    # --- GDPR / informed-consent box ---------------------------------
+    with st.expander("ℹ️  Study information & GDPR (click to read)"):
+        st.markdown(
+            "**Your key rights in 2 lines**  \n"
+            "• You may stop at any moment without consequences.  \n"
+            "• Pseudonymised study data are used **only** for academic research."
+        )
+
+        col_a, col_b = st.columns(2)
+        with col_a:
+            with open(CONSENT_PDF, "rb") as f:
+                st.download_button(
+                    "📄 Informed-consent form (PDF)", f, file_name=CONSENT_PDF.name
+                )
+        with col_b:
+            with open(INFO_PDF, "rb") as f:
+                st.download_button(
+                    "📄 GDPR information letter (PDF)", f, file_name=INFO_PDF.name
+                )
+    # one-line checkbox underneath the expander (outside the `with` block!)
+    consent_ok = st.checkbox(
+        "I have read the documents above and **give my consent** to participate.",
+        key="consent_checkbox"
+    )
+    st.session_state["consent_given"] = consent_ok
+
+    # ─── write a one-time log entry ─────────────────────────────────
+    if consent_ok and not st.session_state.get("consent_logged"):
+        get_learning_logger().log_interaction(
+            interaction_type="consent",
+            user_input="checkbox ticked",
+            system_response="(none)",
+            metadata={}
+        )
+        st.session_state["consent_logged"] = True
 
     # — facilitator: choose study condition --------------------------------
     if "condition_chosen" not in st.session_state:
@@ -210,10 +262,18 @@ Thank you for helping us improve personalised learning!
         )
         if st.sidebar.button("Assign & start"):
 
-            st.session_state["session_manager"] = sm
-            st.session_state["use_personalisation"] = cond == "personalised"
+            cond_flag = (cond == "personalised")          # True / False
+            cond_name = "personalised" if cond_flag else "generic"
+
+            st.session_state["use_personalisation"] = cond_flag
             st.session_state["condition_chosen"] = True
+
+            # --- NEW ----------------------------------------------------------
+            sm.condition = cond_name                     # <- update existing SessionManager
+            # ------------------------------------------------------------------
+
             st.rerun()
+
 
     # — dev helper ---------------------------------------------------------
     if DEV_MODE and st.button("Enable Fast Test Mode (Dev Only)"):
@@ -245,7 +305,11 @@ Thank you for helping us improve personalised learning!
         st.session_state.selected_slide = "Slide 1"
         st.rerun()
 
-    if st.button("Start with Student Profile Survey", use_container_width=True):
+    if st.button(
+        "Start Student Profile Survey",
+        use_container_width=True,
+        disabled=not st.session_state.get("consent_given", False),
+    ):
         navigate_to("profile_survey")
 
 # ------------------------------------------------------------------------
@@ -343,8 +407,8 @@ elif st.session_state.current_page == "profile_survey":
             # Dict version for later use
             st.session_state.profile_dict = parse_detailed_student_profile(profile_text)
 
-        st.success(f"Profile saved – proceed to the {LABEL} Learning section.")
-        if st.button(f"Continue to {LABEL} Learning", use_container_width=True):
+        st.success(f"Profile saved – proceed to the {LABEL} section.")
+        if st.button(f"Continue to {LABEL}", use_container_width=True):
             navigate_to("personalized_learning")
 
 # ------------------------------------------------------------------------
@@ -357,18 +421,38 @@ elif st.session_state.current_page == "personalized_learning":
             navigate_to("profile_survey")
     else:
         # --- header ------------------------------------------------------
-        st.title(f"{LABEL} Explanation Generator")
+        st.title(f"Explanation Generator")
         st.markdown(
-            f"This component lets you generate **{LABEL.lower()}** explanations based on your profile, uploaded slides, and lecture audio."
+            f"This component lets you generate explanations with the uploaded slides and lecture audio."
         )
 
         genai.configure(api_key=API_KEY)
 
+        # … after starting the chat object …
         if "gemini_chat" not in st.session_state:
-            #model = genai.GenerativeModel("gemini-2.5-pro-exp-03-25")
-            model = genai.GenerativeModel("gemini-2.0-flash-thinking-exp-01-21")
+            model = genai.GenerativeModel("gemini-2.5-pro-exp-03-25")
             st.session_state.gemini_chat = model.start_chat(history=[])
-        chat = st.session_state.gemini_chat
+
+            PERSONALISED = st.session_state.get("use_personalisation", True)
+
+            base_ctx = make_base_context(
+                st.session_state.profile_dict if PERSONALISED else None,
+                personalised=PERSONALISED
+            )
+
+            st.session_state.gemini_chat.send_message(json.dumps(base_ctx))
+
+            get_learning_logger().log_interaction(
+                interaction_type="prime_context",
+                user_input=base_ctx,           # already a small dict
+                system_response="(no reply – prime only)",
+                metadata={"condition": current_condition()},
+            )
+
+            #st.session_state.messages.append(
+            #    {"role": "system", "content": json.dumps(base_ctx, indent=2)}
+            #)
+
 
         if DEV_MODE:
             st.sidebar.info(
@@ -433,8 +517,17 @@ elif st.session_state.current_page == "personalized_learning":
                     st.markdown(msg["content"], unsafe_allow_html=True)
 
             user_chat = st.chat_input("Ask a follow‑up question …")
+            PERSONALISED = st.session_state.get("use_personalisation", True)
             if user_chat:
-                reply = chat.send_message(user_chat)
+                payload = json.dumps({
+                    **make_base_context(
+                        st.session_state.profile_dict if PERSONALISED else None,
+                        personalised=PERSONALISED
+                    ),
+                    "UserQuestion": user_chat
+                })
+
+                reply = st.session_state.gemini_chat.send_message(payload)
                 st.session_state.messages.extend(
                     [
                         {"role": "user", "content": user_chat},
@@ -445,7 +538,7 @@ elif st.session_state.current_page == "personalized_learning":
                     interaction_type="chat",
                     user_input=user_chat,
                     system_response=reply.text,
-                    metadata={"slide": None, "condition": LABEL.lower()},
+                    metadata={"slide": None, "condition": current_condition()},
                 )
                 st.rerun()
 
@@ -455,7 +548,7 @@ elif st.session_state.current_page == "personalized_learning":
                 and st.session_state.exported_images
                 and st.session_state.profile_dict
             )
-            if ready and selected_slide and st.button(f"Generate {LABEL} explanation"):
+            if ready and selected_slide and st.button(f"Generate slide summary"):
                 s_idx = int(selected_slide.split()[1]) - 1
                 img = Image.open(st.session_state.exported_images[s_idx])
 
@@ -468,7 +561,7 @@ elif st.session_state.current_page == "personalized_learning":
                 )
                 debug_log(prompt_json)
 
-                reply = chat.send_message([img, prompt_json])
+                reply = st.session_state.gemini_chat.send_message([img, prompt_json])
 
                 summary = create_summary_prompt(
                     st.session_state.profile_dict,
@@ -492,7 +585,7 @@ elif st.session_state.current_page == "personalized_learning":
                     metadata={
                         "slide": selected_slide,
                         "profile": st.session_state.profile_dict.get("Name", "Unknown"),
-                        "condition": LABEL.lower(),
+                        "condition": current_condition(),
                         "session_id": ll.session_manager.session_id,
                     },
                 )
@@ -552,7 +645,7 @@ elif st.session_state.current_page == "knowledge_test":
         if st.button("Go to Student Profile Survey"):
             navigate_to("profile_survey")
     elif not st.session_state.learning_completed:
-        st.warning(f"Please complete the {LABEL.lower()} Learning section first.")
+        st.warning(f"Please complete the {LABEL.lower()} section first.")
         if st.button(f"Go to {LABEL} Learning"):
             navigate_to("personalized_learning")
     else:
@@ -562,7 +655,7 @@ elif st.session_state.current_page == "knowledge_test":
         st.markdown("---")
         prev, nxt = st.columns(2)
         with prev:
-            if st.button(f"Previous: {LABEL} Learning"):
+            if st.button(f"Previous: {LABEL}"):
                 navigate_to("personalized_learning")
         with nxt:
             if st.session_state.test_completed:
