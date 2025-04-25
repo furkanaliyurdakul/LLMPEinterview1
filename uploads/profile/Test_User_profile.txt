@@ -1,0 +1,40 @@
+Student Profile Survey Responses:
+====================================
+
+Section 1: Academic and Background Information
+---------------------------------------------
+1. Name: Test User
+2. Age: 21
+3. Study background: Undergraduate (Bachelor's)
+4. Major of education: Engineering
+5. Work experience: Entry-level
+6. Hobbies or interests: Chess, Reading
+
+7. Academic performance ranking (1=Weakest, 5=Strongest):
+   A. Mathematics: 5
+   B. Language Arts (reading, writing, speaking, listening, critical thinking): 4
+   C. English : 4
+   D. Science (Biology, Chemistry, Physics): 3
+   E. Social Studies (History, Politics, Geography, Economics): 3
+   F. Business & Finance: 2
+   G. Computer Science/Programming: 5
+   H. Engineering/Technology: 5
+   I. Health & Medicine: 2
+   J. Arts & Music: 3
+   K. Foreign Languages: 3
+
+8. Strongest Subject: Mathematics
+9. Most Challenging Subject: Physics
+
+10. Learning priorities ranking (1=least important, 5=most important):
+   A. Mastering relevant formulas and equations: 5
+   B. Understanding interrelationships among various concepts: 5
+   C. Grasping core concepts and key techniques: 4
+   D. Applying theory to real-world problems: 5
+   E. Critically analyzing and evaluating information: 4
+
+11. Preferred learning strategy: Detailed, step-by-step explanations similar to in-depth lectures
+12. Current proficiency level: Intermediate (I have a basic understanding but need improvement)
+13. Short-term academic goals: Improve foundational skills and core concepts; Achieve higher grades or exam performance
+14. Long-term academic/career goals: Gain admission to a top university or specialized program
+15. Potential Barriers: Lack of prior knowledge

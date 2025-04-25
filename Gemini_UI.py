@@ -15,19 +15,12 @@ import time
 from pathlib import Path
 
 # Heavy / Windows‑only libs are *imported* but only initialised when needed
-# Gemini_UI.py  (near the top)
-import sys
-if sys.platform.startswith("win"):
-    import pythoncom
-    import win32com.client as win32
-else:                           # define no-op stand-ins
-    pythoncom = None
-    win32 = None
-
+import pythoncom
 
 # ── third‑party ────────────────────────────────────────────────────────────
 import streamlit as st
 import whisper
+import win32com.client
 
 # ── local ─────────────────────────────────────────────────────────────────
 from session_manager import get_session_manager

@@ -50,6 +50,7 @@ from Gemini_UI import (
     create_summary_prompt,
     make_base_context,
     debug_log,
+    parse_detailed_student_profile,
 )
 from Gemini_UI import export_ppt_slides as process_ppt_file  # alias → keep old name
 from Gemini_UI import (
@@ -285,23 +286,12 @@ Thank you for helping us improve personalised learning!
         st.session_state.transcription_text = (
             "This is a mock transcription for fast testing."
         )
-        st.session_state.profile_dict = {
-            "Name": "Test User",
-            "CurrentProficiency": "Intermediate",
-            "StrongestSubject": "Mathematics",
-            "WeakestSubject": "Physics",
-            "PreferredLearningStrategies": [
-                "Detailed, step‑by‑step explanations similar to in‑depth lectures",
-            ],
-            "PotentialBarriers": ["Lack of prior knowledge"],
-            "ShortTermGoals": ["Understand core concepts"],
-            "Hobbies": ["Chess", "Reading"],
-            "Major": "Engineering",
-            "LearningPriorities": {
-                "Understanding interrelationships among various concepts": 5,
-                "Applying theory to real-world problems": 5,
-            },
-        }
+        sample_path = Path(__file__).parent / "uploads" / "profile" / "Furkan_Ali_profile.txt" 
+        profile_txt = sample_path.read_text(encoding="utf-8")
+
+        st.session_state.profile_text  = profile_txt
+        st.session_state.profile_dict  = parse_detailed_student_profile(profile_txt)
+
         st.session_state.selected_slide = "Slide 1"
         st.rerun()
 

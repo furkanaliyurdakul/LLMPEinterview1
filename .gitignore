@@ -36,7 +36,7 @@ Thumbs.db
 
 # Output directories that may contain sensitive data
 output/
-uploads/profile/
+#uploads/profile/
 
 # Temporary files
 *.tmp
