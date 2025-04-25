@@ -286,7 +286,7 @@ Thank you for helping us improve personalised learning!
         st.session_state.transcription_text = (
             "This is a mock transcription for fast testing."
         )
-        sample_path = Path(__file__).parent / "uploads" / "profile" / "Furkan_Ali_profile.txt" 
+        sample_path = Path(__file__).parent / "uploads" / "profile" / "Test_User_profile.txt" 
         profile_txt = sample_path.read_text(encoding="utf-8")
 
         st.session_state.profile_text  = profile_txt
