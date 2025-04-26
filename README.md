@@ -1,52 +1,73 @@
 # Personalized Learning Platform
 
-## File Organization Structure
+A self‑contained Streamlit app for our KU Leuven study on AI‑generated learning explanations.  
+All session data are stored pseudonymously so that results can be analysed without linking them to a real identity.
 
-This platform uses a session-based file organization structure with pseudonymization for research purposes. Each session creates a unique directory with the following structure:
+---
+## Directory structure
+
+Each time a participant opens the app a new _session directory_ is created under **`output/`**:
 
 ```
 output/
-  ├── [TIMESTAMP]_[FAKE_NAME]/  # Unique session directory
-  │   ├── profile/               # Student profile data
-  │   │   ├── original_profile.txt
-  │   │   ├── original_profile.json
-  │   │   ├── pseudonymized_profile.txt
-  │   │   └── pseudonymized_profile.json
-  │   ├── knowledge_test/        # Knowledge test results
-  │   │   └── knowledge_test_results.txt
-  │   ├── learning_logs/         # Logs of interactions with the learning tool
-  │   │   └── learning_log_[TIMESTAMP].json
-  │   └── ueq/                   # User Experience Questionnaire responses
-  │       └── ueq_responses.txt
-  └── [Other session directories...]
+  ├── 20250427_120345_Alex_Smith/   # <timestamp>_<fake-name>
+  │   ├── profile/                  # uploaded & parsed student profile
+  │   ├── knowledge_test/           # quiz results
+  │   ├── learning_logs/            # tutor‑chat logs
+  │   ├── ueq/                      # UEQ answers + benchmark
+  │   └── meta/                     # page‑timer JSON, etc.
+  └── …
 ```
 
-## Pseudonymization Approach
+### Pseudonymisation in a nutshell
+1. When `SessionManager` starts it creates the session ID `(timestamp + fake name)` and writes it to `output/…/condition.txt`.
+2. A **pseudonymised** copy of the profile replaces the real name with the fake name.  Down‑stream components read only this copy.
+3. All later artefacts (chat logs, test results, UEQ) live in the same folder and therefore inherit the fake identifier.
 
-The system uses the following approach for pseudonymization:
+---
+## Key components
+| file | role |
+|------|------|
+| `main.py` | navigation, page timer, session wiring |
+| `Gemini_UI.py` | personalised/generic tutor UI & helpers |
+| `session_manager.py` | directory & pseudonym handling |
+| `personalized_learning_logger.py` | buffered file logger for tutor interactions |
+| `testui_profilesurvey.py` | student‑profile questionnaire |
+| `testui_knowledgetest.py` | 5‑item multiple‑choice quiz |
+| `testui_ueqsurvey.py` | 26‑item UEQ short form + benchmark |
+| `page_timer.py` | per‑page dwell‑time measurement |
 
-1. When a new session starts, a unique session ID is generated using a timestamp and a randomly generated fake name.
-2. The original student profile is saved with the real name and other identifying information.
-3. A pseudonymized version of the profile is created by replacing the real name with the fake name.
-4. All subsequent files (knowledge test results, learning logs, UEQ responses) are saved in the session directory and associated with the fake name.
-5. The fake name serves as a unique identifier that links all files from the same session without revealing the student's real identity.
+---
+## Selecting the study condition *(personalised vs generic)*
 
-## Components
+Participants must **not** know which branch they get.  
+The choice is therefore made in **code, not in the UI**.
 
-1. **Session Manager** (`session_manager.py`): Handles session creation, directory management, and pseudonymization.
-2. **Profile Survey** (`testui_profilesurvey.py`): Collects student profile information.
-3. **Personalized Learning** (`Gemini_UI.py`): Provides personalized learning experiences based on the student profile.
-4. **Learning Logger** (`personalized_learning_logger.py`): Logs interactions with the personalized learning tool.
-5. **Knowledge Test** (`testui_knowledgetest.py`): Assesses student knowledge after learning.
-6. **UEQ Survey** (`testui_ueqsurvey.py`): Collects feedback about the user experience.
-7. **Main Application** (`main.py`): Integrates all components with navigation.
-
-## Usage
-
-Run the main application to start a new session:
-
+```python
+# main.py – near the top
+DEFAULT_PERSONALISED: bool = True  # True → personalised, False → generic
 ```
+
+1. Set the flag, save the file, restart the Streamlit server.
+2. The flag is copied into `st.session_state["use_personalisation"]` and cached for the whole run.
+3. `SessionManager` writes the chosen condition to `output/…/condition.txt` so it is visible during analysis.
+
+*Tip:* when `DEV_MODE = True` you can still uncomment the old facilitator radio‑button to flip the condition interactively while testing.
+
+---
+## Running the app
+
+```bash
+# (optional) create a fresh virtual environment
+python -m venv .venv && source .venv/bin/activate  # PowerShell: .venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+
+# launch the Streamlit server
 streamlit run main.py
+
+# (optional) expose it externally
+ngrok http 8501     # copy the forwarded URL for your participants
 ```
 
-Follow the navigation flow from Profile Survey to UEQ Survey. All data will be automatically saved in the session directory with pseudonymization.
+All uploads and logs appear under **`output/`** immediately.  
+After the session you can zip that folder for further analysis.
