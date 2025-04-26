@@ -71,6 +71,18 @@ if "_page_timer" not in st.session_state:
     
     page_timer_start("home")
 
+# ── study-condition toggle ────────────────────────────────────────────
+# True  → personalised explanations
+# False → generic explanations
+DEFAULT_PERSONALISED: bool = True            # ← change this for each study run
+
+# ---------------------------------------------------------------------
+# set study condition from the constant above (runs once per session)
+# ---------------------------------------------------------------------
+if "condition_chosen" not in st.session_state:
+    st.session_state["use_personalisation"] = DEFAULT_PERSONALISED
+    st.session_state["condition_chosen"]    = True
+    sm.condition = "personalised" if DEFAULT_PERSONALISED else "generic"
 
 # ───────────────────────────────────────────────────────────────
 # Globals & constants
@@ -256,24 +268,24 @@ Thank you for helping us improve personalised learning!
         st.session_state["consent_logged"] = True
 
     # — facilitator: choose study condition --------------------------------
-    if "condition_chosen" not in st.session_state:
-        st.sidebar.subheader("⚙️ Study condition (facilitator only)")
-        cond = st.sidebar.radio(
-            "Show explanations as …", ["personalised", "generic"], key="cond_radio"
-        )
-        if st.sidebar.button("Assign & start"):
+#    if "condition_chosen" not in st.session_state:
+#        st.sidebar.subheader("⚙️ Study condition (facilitator only)")
+#        cond = st.sidebar.radio(
+#            "Show explanations as …", ["personalised", "generic"], key="cond_radio"
+#        )
+#        if st.sidebar.button("Assign & start"):
 
-            cond_flag = (cond == "personalised")          # True / False
-            cond_name = "personalised" if cond_flag else "generic"
+#            cond_flag = (cond == "personalised")          # True / False
+#            cond_name = "personalised" if cond_flag else "generic"
 
-            st.session_state["use_personalisation"] = cond_flag
-            st.session_state["condition_chosen"] = True
+#            st.session_state["use_personalisation"] = cond_flag
+#            st.session_state["condition_chosen"] = True
 
             # --- NEW ----------------------------------------------------------
-            sm.condition = cond_name                     # <- update existing SessionManager
+#            sm.condition = cond_name                     # <- update existing SessionManager
             # ------------------------------------------------------------------
-
-            st.rerun()
+#
+#            st.rerun()
 
 
     # — dev helper ---------------------------------------------------------
