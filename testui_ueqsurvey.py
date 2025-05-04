@@ -229,20 +229,20 @@ if st.button("Save comment"):
 
 # helper ------------------------------------------------------
 def show_ueq_benchmark(responses: dict) -> None:
-    """Convert radio answers (1‑7) to –3…+3, compute the six
+    """Convert radio answers (1/7) to –3/+3, compute the six
     UEQ scale means, compare with the public benchmark, and
     print a short table."""
 
     def to_interval(v: int) -> int:
-        return v - 4  # 1→‑3 … 7→+3
+        return v - 4  # 1->‑3 … 7->+3
 
     SCALES = {
-        "Attractiveness": [1, 6, 7, 16, 24, 25],
-        "Perspicuity": [2, 4, 8, 13, 21, 23],
-        "Task ease": [9, 20, 26],  # three items in short UEQ
-        "Dependability": [3, 11, 17, 22],
-        "Stimulation": [5, 18, 19],
-        "Novelty": [10, 12, 14, 15],
+        "Attractiveness": [1, 12, 14, 16, 24, 25],
+        "Perspicuity": [2, 4, 13, 21],
+        "Efficiency": [9, 20, 22, 23], 
+        "Dependability": [8, 11, 17, 19],
+        "Stimulation": [5, 6, 7, 18],
+        "Novelty": [3, 10, 15, 26],
     }
 
     BENCHMARK = {
@@ -260,7 +260,7 @@ def show_ueq_benchmark(responses: dict) -> None:
         vals = [to_interval(responses[f"q{n}"]["value"]) for n in q_nums]
         scale_scores[scale] = sum(vals) / len(vals)
 
-    # grade vs benchmark: ±0.5 sd bands
+    # grade vs benchmark: -+0.5 sd bands
     def grade(x, m, sd):
         if x >= m + 0.5 * sd:
             return "excellent"
@@ -289,12 +289,12 @@ def evaluate_ueq(raw: dict) -> dict:
         return v - 4
 
     SCALES = {
-        "Attractiveness": [1, 6, 7, 16, 24, 25],
-        "Perspicuity": [2, 4, 8, 13, 21, 23],
-        "Efficiency": [9, 20, 26],  # three items in short UEQ
-        "Dependability": [3, 11, 17, 22],
-        "Stimulation": [5, 18, 19],
-        "Novelty": [10, 12, 14, 15],
+        "Attractiveness": [1, 12, 14, 16, 24, 25],
+        "Perspicuity": [2, 4, 13, 21],
+        "Efficiency": [9, 20, 22, 23], 
+        "Dependability": [8, 11, 17, 19],
+        "Stimulation": [5, 6, 7, 18],
+        "Novelty": [3, 10, 15, 26],
     }
     BENCH = {
         "Attractiveness": (1.50, 0.85),
@@ -303,7 +303,7 @@ def evaluate_ueq(raw: dict) -> dict:
         "Dependability": (1.25, 0.86),
         "Stimulation": (1.17, 0.96),
         "Novelty": (0.78, 0.96),
-    }  # same stats
+    }
 
     means, grades = {}, {}
     for scale, q_nums in SCALES.items():
