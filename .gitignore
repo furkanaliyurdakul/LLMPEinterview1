@@ -24,6 +24,9 @@ env/
 .env
 .env.local
 
+# Streamlit secrets
+.streamlit/secrets.toml
+
 # Logs
 *.log
 

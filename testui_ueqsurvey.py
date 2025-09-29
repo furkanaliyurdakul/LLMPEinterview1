@@ -8,8 +8,23 @@ session_manager = get_session_manager()
 
 st.title("User Experience Questionnaire")
 
-st.markdown(
-    """
+st.ma    # Import the session manager
+    from session_manager import get_session_manager
+
+    # Get or create a session manager instance
+    session_manager = get_session_manager()
+
+    bench = evaluate_ueq(answers_dict)
+
+    txt_path = session_manager.save_ueq(
+        answers=answers_dict,
+        benchmark=bench,
+        free_text=st.session_state.get("saved_comment"),  # ← not "extra_comment"
+    )
+
+    # Get the session info for display
+    session_info = session_manager.get_session_info()
+    fake_name = session_info["fake_name"]
 This questionnaire helps us evaluate your experience with the platform. For each item, please select a point on the scale that best represents your impression.
 
 Please decide spontaneously. Don't think too long about your decision to make sure that you convey your original impression.

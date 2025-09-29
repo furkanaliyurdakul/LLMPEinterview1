@@ -90,8 +90,8 @@ if "condition_chosen" not in st.session_state:
 # Globals & constants
 # ───────────────────────────────────────────────────────────────
 DEV_MODE: bool = False
-TOPIC: str = "'Introduction to Cancer Biology'"
-API_KEY: str = "AIzaSyArkmZSrZaeWQSfL9CFkQ0jXaEe4D9sMEQ"
+TOPIC: str = "Introduction to Cancer Biology"
+API_KEY: str = st.secrets["google"]["api_key"]
 
 # Yiman = AIzaSyCdNS08cjO_lvj35Ytvs8szbUmeAdo4aIA
 # Furkan Ali = AIzaSyArkmZSrZaeWQSfL9CFkQ0jXaEe4D9sMEQ
@@ -126,11 +126,6 @@ for key in (
 
 def current_condition() -> str:
     return "personalised" if st.session_state.get("use_personalisation", True) else "generic"
-
-def dict_to_content(d: Dict[str, str]) -> Content:
-    """Convert a dict with *role* & *content* into a Gemini :class:`Content`."""
-    return Content(role=d["role"], parts=[Part.from_text(text=d["content"])])
-
 
 def navigate_to(page: str) -> None:
     """Client‑side router with prerequisite checks."""
@@ -851,9 +846,33 @@ elif st.session_state.current_page == "ueq_survey":
                 try:
                     sm = get_session_manager()
                     final_analytics_path = sm.create_final_analytics()
-                    st.success(f"Thank you for completing all components of the platform!")
+                    
+                    # Upload complete session data to Supabase (single upload at the end)
+                    try:
+                        from supabase_storage import get_supabase_storage
+                        storage = get_supabase_storage()
+                        
+                        session_info = sm.get_session_info()
+                        session_id = session_info["session_id"]
+                        
+                        # Upload all original session files to Supabase
+                        success = storage.upload_session_files(sm)
+                        
+                        if success:
+                            st.success(f"🎉 Thank you for completing all components of the platform!")
+                            st.info(f"Session ID: {session_id}")
+                        else:
+                            st.warning(f"Data saved locally but cloud backup had issues.")
+                            st.success(f"Thank you for completing all components of the platform!")
+                        
+                    except Exception as e:
+                        st.warning(f"Data saved locally but cloud backup had issues: {e}")
+                        st.success(f"Thank you for completing all components of the platform!")
+                    
                     st.info(f"Final research analytics saved: `{os.path.basename(final_analytics_path)}`")
+                    
                 except Exception as e:
                     st.warning(f"Could not generate final analytics: {e}")
                     st.success("Thank you for completing all components of the platform!")
+                
                 navigate_to("home")
