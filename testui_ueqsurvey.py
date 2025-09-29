@@ -8,55 +8,51 @@ session_manager = get_session_manager()
 # ---- UEQ CALCULATION FUNCTION ------
 def evaluate_ueq(raw: dict) -> dict:
     """Evaluate UEQ scores based on the raw responses.
-    Handles the original question format and standard inversion logic.
+    Returns dictionary with 'means' and 'grades' keys for session_manager.save_ueq().
     """
-    # These are the specific questions that need to be inverted
-    # Based on standard UEQ format where left side is negative for these items
-    inverted_questions = [3, 4, 5, 8, 9, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 24, 25, 26]
-
-    # Initialize dimension totals
-    attractiveness_total = 0
-    perspicuity_total = 0
-    efficiency_total = 0
-    dependability_total = 0
-    stimulation_total = 0
-    novelty_total = 0
-
-    # Process each response
-    for q_key, value in raw.items():
-        q_num = int(q_key[1:])  # Extract number from "q1", "q2", etc.
-
-        # Invert score if needed (8 - value for 1-7 scale)
-        if q_num in inverted_questions:
-            adjusted_value = 8 - value
-        else:
-            adjusted_value = value
-
-        # Assign to appropriate dimension based on UEQ structure
-        if q_num in [1, 12, 14, 16, 24, 25]:  # Attractiveness
-            attractiveness_total += adjusted_value
-        elif q_num in [2, 4, 13, 21]:  # Perspicuity (formerly Clarity)
-            perspicuity_total += adjusted_value
-        elif q_num in [9, 20, 22, 23]:  # Efficiency
-            efficiency_total += adjusted_value
-        elif q_num in [8, 11, 17, 19]:  # Dependability
-            dependability_total += adjusted_value
-        elif q_num in [5, 6, 7, 18]:  # Stimulation
-            stimulation_total += adjusted_value
-        elif q_num in [3, 10, 15, 26]:  # Novelty
-            novelty_total += adjusted_value
-
-    # Calculate averages (each dimension has different number of items)
-    dimensions = {
-        "Attractiveness": attractiveness_total / 6,
-        "Perspicuity": perspicuity_total / 4, 
-        "Efficiency": efficiency_total / 4,
-        "Dependability": dependability_total / 4,
-        "Stimulation": stimulation_total / 4,
-        "Novelty": novelty_total / 4,
+    # UEQ scale definitions
+    SCALES = {
+        "Attractiveness": [1, 12, 14, 16, 24, 25],
+        "Perspicuity": [2, 4, 13, 21],
+        "Efficiency": [9, 20, 22, 23],
+        "Dependability": [8, 11, 17, 19],
+        "Stimulation": [5, 6, 7, 18],
+        "Novelty": [3, 10, 15, 26],
     }
-
-    return dimensions
+    
+    # UEQ benchmark values (mean, standard deviation)
+    BENCH = {
+        "Attractiveness": (1.50, 0.85),
+        "Perspicuity": (1.45, 0.83),
+        "Efficiency": (1.38, 0.79),
+        "Dependability": (1.25, 0.86),
+        "Stimulation": (1.17, 0.96),
+        "Novelty": (0.78, 0.96),
+    }
+    
+    def to_interval(score: int) -> int:
+        """Convert 1-7 Likert to −3 … +3."""
+        return score - 4
+    
+    def grade(mean: float, bench_mean: float, sd: float) -> str:
+        """Grade the mean against benchmark."""
+        if mean >= bench_mean + 0.5 * sd:
+            return "excellent"
+        if mean >= bench_mean:
+            return "good"
+        if mean >= bench_mean - 0.5 * sd:
+            return "okay"
+        return "weak"
+    
+    # Calculate means and grades for each scale
+    means, grades = {}, {}
+    for scale, items in SCALES.items():
+        vals = [to_interval(raw[f"q{n}"]) for n in items]
+        m = sum(vals) / len(vals)
+        means[scale] = m
+        grades[scale] = grade(m, *BENCH[scale])
+    
+    return {"means": means, "grades": grades}
 
 st.title("User Experience Questionnaire")
 
