@@ -732,12 +732,28 @@ elif st.session_state.current_page == "personalized_learning":
 
             if st.session_state.exported_images and selected_slide:
                 idx = int(selected_slide.split()[1]) - 1
-                st.subheader("Selected Slide")
-                st.image(
-                    str(st.session_state.exported_images[idx]),
-                    caption=selected_slide,
-                    use_container_width=True,
-                )
+                
+                from pathlib import Path
+                slide_path = st.session_state.exported_images[idx]
+                
+                # Convert to Path object if it isn't already
+                if not isinstance(slide_path, Path):
+                    slide_path = Path(slide_path)
+                
+                # Check if file exists
+                if not slide_path.exists():
+                    st.error(f"Slide not found: {slide_path.resolve()}")
+                    st.write(f"Current working directory: {Path.cwd()}")
+                    st.write(f"Looking for: {slide_path}")
+                    st.stop()
+                
+                try:
+                    # Use PIL to open and verify the image
+                    img = Image.open(slide_path)
+                    st.image(img, caption=str(slide_path.name), use_column_width=True)
+                except Exception as e:
+                    st.exception(e)
+                    st.stop()
 
             if st.session_state.get("profile_text"):
                 st.subheader("Student Profile")
