@@ -841,7 +841,10 @@ elif st.session_state.current_page == "ueq_survey":
             if st.button("Previous: Knowledge Test"):
                 navigate_to("knowledge_test")
         with col_f:
-            if st.button("Finish"):
+            if st.button("Finish") and not st.session_state.get("upload_completed", False):
+                # Set upload completed flag to prevent re-running
+                st.session_state["upload_completed"] = True
+                
                 # Generate final consolidated analytics
                 try:
                     sm = get_session_manager()
@@ -875,4 +878,13 @@ elif st.session_state.current_page == "ueq_survey":
                     st.warning(f"Could not generate final analytics: {e}")
                     st.success("Thank you for completing all components of the platform!")
                 
-                navigate_to("home")
+                # Rerun to show the upload results
+                st.rerun()
+            
+            # Show "Return to Home" button after upload is completed
+            if st.session_state.get("upload_completed", False):
+                st.markdown("---")
+                if st.button("Return to Home", use_container_width=True):
+                    # Reset the upload completed flag for future sessions
+                    st.session_state["upload_completed"] = False
+                    navigate_to("home")
