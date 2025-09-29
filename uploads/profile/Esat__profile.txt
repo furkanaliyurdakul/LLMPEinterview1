@@ -1,0 +1,40 @@
+Student Profile Survey Responses:
+====================================
+
+Section 1: Academic and Background Information
+---------------------------------------------
+1. Name: Esat 
+2. Age: 23
+3. Study background: Undergraduate (Bachelor's)
+4. Major of education: Engineering of Electronics & ICT 
+5. Work experience: Entry-level
+6. Hobbies or interests: Football, FC25, researching, reading books, communicating with people, socializing
+
+7. Academic performance ranking (1=Weakest, 5=Strongest):
+   A. Mathematics: 4
+   B. Language Arts (reading, writing, speaking, listening, critical thinking): 5
+   C. English : 3
+   D. Science (Biology, Chemistry, Physics): 3
+   E. Social Studies (History, Politics, Geography, Economics): 1
+   F. Business & Finance: 2
+   G. Computer Science/Programming: 4
+   H. Engineering/Technology: 5
+   I. Health & Medicine: 1
+   J. Arts & Music: 4
+   K. Foreign Languages: 5
+
+8. Strongest Subject: Engineering/Technology, Foreign Languages, Communication, Listening
+9. Most Challenging Subject: Abstract applications, politics, applied physics
+
+10. Learning priorities ranking (1=least important, 5=most important):
+   A. Mastering relevant formulas and equations: 5
+   B. Understanding interrelationships among various concepts: 5
+   C. Grasping core concepts and key techniques: 5
+   D. Applying theory to real-world problems: 5
+   E. Critically analyzing and evaluating information: 5
+
+11. Preferred learning strategy: Real-world case studies with practical examples; Interactive problem-solving exercises and guided project-based tasks; Detailed, step-by-step explanations similar to in-depth lectures; Adaptive quizzes or exams
+12. Current proficiency level: Intermediate (I have a basic understanding but need improvement)
+13. Short-term academic goals: Develop better problem-solving or analytical abilities; Gain new knowledge in specific areas
+14. Long-term academic/career goals: Advance my career or professional skills in this field; Engage in research, innovation, or entrepreneurship
+15. Potential Barriers: Difficulty understanding key concepts; Emotional or motivational challenges

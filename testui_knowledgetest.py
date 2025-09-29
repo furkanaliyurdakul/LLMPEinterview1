@@ -3,100 +3,89 @@ import os
 
 import streamlit as st
 
-st.title("📧 Knowledge Test - AI Techniques for Detecting Email Threats")
+st.title("🧬 Knowledge Test - Introduction to Cancer Biology")
 
 st.markdown(
     """
-Welcome to the knowledge assessment on machine learning concepts and email threat detection. This brief test is designed to evaluate your understanding of key concepts in this domain through a mix of single and multiple-choice questions.
+Welcome to the knowledge assessment on cancer biology and genetics. This brief test is designed to evaluate your understanding of key concepts in cancer development, genetics, and cellular processes through multiple-choice questions.
 
-The assessment consists of 5 questions that cover both theoretical understanding and practical applications. You'll receive immediate feedback on your performance, with a fair scoring system that considers both your correct and incorrect selections. Feel free to trust your intuition - your spontaneous responses often best reflect your true understanding.
+The assessment consists of 5 questions that cover fundamental concepts in cancer biology including BRCA mutations, cancer genetics analogies, epigenetic regulation, genomic instability, and cellular processes in malignancy. You'll receive immediate feedback on your performance.
 
-At the end of the test, you'll be able to see your score and download your results for future reference. Remember, this is a learning opportunity to help you gauge your knowledge in this field.
+Feel free to trust your intuition and apply the knowledge you've gained from the lecture materials. Your spontaneous responses often best reflect your true understanding of these important biological concepts.
+
+At the end of the test, you'll be able to see your score and download your results for future reference. Remember, this is a learning opportunity to help you gauge your knowledge in cancer biology.
 
 Ready to begin? Let's explore your understanding together!
 """
 )
 
-# Question 1 - Changed to radio button for single selection
+# Question 1 - Single choice radio button
 st.markdown(
-    "**1. What is a fundamental distinction between a perceptron and a support vector machine in the context of supervised learning algorithms?**"
+    "**1. A woman inherits one mutated BRCA1 allele. Which statement best explains why her risk of breast cancer is elevated but not certain?**"
 )
 q1_options = [
-    "Perceptron employs a kernel trick to enhance its capabilities",
-    "Support Vector Machine utilizes a kernel trick to handle complex data distributions.",
-    "Perceptron is limited to handling only linearly separable datasets.",
-    "Support Vector Machine is restricted to binary classification problems.",
+    "Both alleles are already inactive from birth.",
+    "The remaining wild-type allele can still produce functional protein until a second mutation occurs.",
+    "BRCA1 is only important in embryonic cells, not in adult tissue.",
+    "Inherited mutations always guarantee cancer, regardless of environment.",
 ]
 q1 = st.radio("Select one answer for question 1:", q1_options, key="knowledge_q1", index=None)
 
-# Question 2 - Kept as multiple choice with checkboxes
+# Question 2 - Single choice radio button
 st.markdown(
-    "**2. Which characteristics are accurate for artificial neural networks? (Select all that apply)**"
+    "**2. Which scenario best illustrates the \"gas and brakes\" analogy of cancer genetics?**"
 )
 q2_options = [
-    "They are comprised of interconnected neurons with adjustable weights",
-    "They have the capability to model and learn complex nonlinear relationships.",
-    "They are always dependent on labeled datasets for training",
-    "They are exclusively employed for image recognition tasks.",
+    "A cell acquires an inactivating mutation in p53, leading to loss of cell cycle arrest after DNA damage.",
+    "A cell acquires an inactivating mutation in Ras, reducing MAPK pathway signaling.",
+    "A cell deletes genes controlling glycolysis, reducing its metabolic activity.",
+    "A cell undergoes benign variation in a noncoding intron sequence.",
 ]
-q2_selected = [
-    st.checkbox(option, key=f"knowledge_q2_{i}") for i, option in enumerate(q2_options)
-]
-q2 = [option for selected, option in zip(q2_selected, q2_options) if selected]
+q2 = st.radio("Select one answer for question 2:", q2_options, key="knowledge_q2", index=None)
 
-# Question 3 - Changed to radio button for single selection
+# Question 3 - Single choice radio button
 st.markdown(
-    "**3. In the machine learning development process, which of the following are typically the preliminary stages that a data scientist should address?**"
+    "**3. Why does epigenetic regulation play a critical role in explaining cellular diversity despite identical DNA sequences in different tissues?**"
 )
 q3_options = [
-    "Collecting and preprocessing data",
-    "Conducting model tuning and optimizing hyperparameters",
-    "Performing feature scaling and deploying the model",
-    "Evaluating the model and selecting appropriate metrics",
+    "Epigenetics modifies gene expression without altering DNA sequence, enabling cell-type-specific transcription programs.",
+    "Cells randomly delete DNA they do not need, creating diversity.",
+    "DNA sequence varies significantly between liver and skin cells.",
+    "Epigenetic changes occur only in cancer cells, not in normal tissues.",
 ]
 q3 = st.radio("Select one answer for question 3:", q3_options, key="knowledge_q3", index=None)
 
-# Question 4 - Kept as multiple choice with checkboxes
+# Question 4 - Single choice radio button
 st.markdown(
-    "**4. What are some significant historical advancements in spam filtering technologies? (Select all that apply)**"
+    "**4. How does genomic instability accelerate tumor evolution?**"
 )
 q4_options = [
-    "Adoption of Bayesian filtering techniques",
-    "Introduction of challenge-response systems",
-    "Creation of CAPTCHA systems",
-    "Integration of machine learning algorithms into spam filtering",
+    "It maintains identical DNA across all tumor cells, ensuring stability.",
+    "It introduces a higher rate of mutation, increasing the chance of acquiring oncogene activation and tumor suppressor loss.",
+    "It prevents mutations from being passed to daughter cells, stabilizing growth.",
+    "It reduces mutation frequency, protecting the genome from becoming oncogenic.",
 ]
-q4_selected = [
-    st.checkbox(option, key=f"knowledge_q4_{i}") for i, option in enumerate(q4_options)
-]
-q4 = [option for selected, option in zip(q4_selected, q4_options) if selected]
+q4 = st.radio("Select one answer for question 4:", q4_options, key="knowledge_q4", index=None)
 
-# Question 5 - Changed to radio button for single selection
+# Question 5 - Single choice radio button
 st.markdown(
-    "**5. Imagine your organization is experiencing a high volume of spam emails despite having a basic spam filter in place. You're tasked with improving the spam detection system. Considering current techniques, which approach would be most effective to enhance the filter's accuracy?**"
+    "**5. According to the lecture, which of the following is not one of the three major cellular processes that a cancer cell must overcome to become malignant?**"
 )
 q5_options = [
-    "Implementing a Support Vector Machine with a kernel trick to improve classification accuracy.",
-    "Relying solely on linear regression for spam classification",
-    "Utilizing K-Means Clustering to categorize emails",
-    "Adding more CAPTCHAs to verify sender authenticity.",
+    "Regulation of proliferation",
+    "Regulation of apoptosis/cell survival",
+    "Regulation of cellular communication",
+    "Regulation of protein translation",
 ]
 q5 = st.radio("Select one answer for question 5:", q5_options, key="knowledge_q5", index=None)
 
 # Correct Answers
 correct_answers = {
-    "knowledge_q1": "Support Vector Machine utilizes a kernel trick to handle complex data distributions.",
-    "knowledge_q2": [
-        "They are comprised of interconnected neurons with adjustable weights",
-        "They have the capability to model and learn complex nonlinear relationships.",
-    ],
-    "knowledge_q3": "Collecting and preprocessing data",
-    "knowledge_q4": [
-        "Adoption of Bayesian filtering techniques",
-        "Introduction of challenge-response systems",
-        "Integration of machine learning algorithms into spam filtering",
-    ],
-    "knowledge_q5": "Implementing a Support Vector Machine with a kernel trick to improve classification accuracy.",
+    "knowledge_q1": "The remaining wild-type allele can still produce functional protein until a second mutation occurs.",
+    "knowledge_q2": "A cell acquires an inactivating mutation in p53, leading to loss of cell cycle arrest after DNA damage.",
+    "knowledge_q3": "Epigenetics modifies gene expression without altering DNA sequence, enabling cell-type-specific transcription programs.",
+    "knowledge_q4": "It introduces a higher rate of mutation, increasing the chance of acquiring oncogene activation and tumor suppressor loss.",
+    "knowledge_q5": "Regulation of protein translation",
 }
 
 # Initialize session state for test completion status
@@ -137,42 +126,17 @@ else:
                 st.rerun()
         with col2:
             if st.button("Confirm Submission"):
-                # For single-choice questions (q1, q3, q5)
+                # All questions are now single-choice
                 if q1 == correct_answers["knowledge_q1"]:
+                    score += 1
+                if q2 == correct_answers["knowledge_q2"]:
                     score += 1
                 if q3 == correct_answers["knowledge_q3"]:
                     score += 1
+                if q4 == correct_answers["knowledge_q4"]:
+                    score += 1
                 if q5 == correct_answers["knowledge_q5"]:
                     score += 1
-
-                # For multiple-choice questions (q2, q4)
-                # Calculate partial credit for q2
-                q2_correct = set(correct_answers["knowledge_q2"])
-                q2_selected = set(q2)
-                q2_score = 0
-                if q2_selected:
-                    # Calculate true positives and false positives
-                    true_positives = len(q2_selected.intersection(q2_correct))
-                    false_positives = len(q2_selected - q2_correct)
-                    # Award points for correct selections and penalize for incorrect ones
-                    q2_score = max(
-                        0, (true_positives / len(q2_correct)) - (false_positives * 0.25)
-                    )
-                    score += q2_score
-
-                # Calculate partial credit for q4
-                q4_correct = set(correct_answers["knowledge_q4"])
-                q4_selected = set(q4)
-                q4_score = 0
-                if q4_selected:
-                    # Calculate true positives and false positives
-                    true_positives = len(q4_selected.intersection(q4_correct))
-                    false_positives = len(q4_selected - q4_correct)
-                    # Award points for correct selections and penalize for incorrect ones
-                    q4_score = max(
-                        0, (true_positives / len(q4_correct)) - (false_positives * 0.25)
-                    )
-                    score += q4_score
 
                 # Store the score in session state to mark test as completed
                 st.session_state.score = score
@@ -185,12 +149,12 @@ else:
 Your Responses:
 --------------------------------------
 1. {q1} {'✓' if q1 == correct_answers['knowledge_q1'] else '✗'}
-2. {', '.join(q2)} (Score: {q2_score:.2f})
+2. {q2} {'✓' if q2 == correct_answers['knowledge_q2'] else '✗'}
 3. {q3} {'✓' if q3 == correct_answers['knowledge_q3'] else '✗'}
-4. {', '.join(q4)} (Score: {q4_score:.2f})
+4. {q4} {'✓' if q4 == correct_answers['knowledge_q4'] else '✗'}
 5. {q5} {'✓' if q5 == correct_answers['knowledge_q5'] else '✗'}
 
-Total Score: {score:.2f}/5
+Total Score: {score}/5
 """
 
                 # Store the result summary in session state
@@ -225,12 +189,10 @@ Total Score: {score:.2f}/5
                     )
 
                 formatted_results += "<h4>Question 2:</h4>"
-                formatted_results += (
-                    f"<p>Your answers: {', '.join(q2)} (Score: {q2_score:.2f})</p>"
-                )
-                if q2_score < 1:
+                formatted_results += f"<p>Your answer: {q2} {'✅' if q2 == correct_answers['knowledge_q2'] else '❌'}</p>"
+                if q2 != correct_answers["knowledge_q2"]:
                     formatted_results += (
-                        f"<p>Correct answers: {', '.join(correct_answers['knowledge_q2'])}</p>"
+                        f"<p>Correct answer: {correct_answers['knowledge_q2']}</p>"
                     )
 
                 formatted_results += "<h4>Question 3:</h4>"
@@ -241,12 +203,10 @@ Total Score: {score:.2f}/5
                     )
 
                 formatted_results += "<h4>Question 4:</h4>"
-                formatted_results += (
-                    f"<p>Your answers: {', '.join(q4)} (Score: {q4_score:.2f})</p>"
-                )
-                if q4_score < 1:
+                formatted_results += f"<p>Your answer: {q4} {'✅' if q4 == correct_answers['knowledge_q4'] else '❌'}</p>"
+                if q4 != correct_answers["knowledge_q4"]:
                     formatted_results += (
-                        f"<p>Correct answers: {', '.join(correct_answers['knowledge_q4'])}</p>"
+                        f"<p>Correct answer: {correct_answers['knowledge_q4']}</p>"
                     )
 
                 formatted_results += "<h4>Question 5:</h4>"
@@ -256,6 +216,6 @@ Total Score: {score:.2f}/5
                         f"<p>Correct answer: {correct_answers['knowledge_q5']}</p>"
                     )
 
-                formatted_results += f"<h4>Total Score: {score:.2f}/5</h4>"
+                formatted_results += f"<h4>Total Score: {score}/5</h4>"
 
                 st.markdown(formatted_results, unsafe_allow_html=True)

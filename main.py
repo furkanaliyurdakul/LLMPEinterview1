@@ -31,9 +31,11 @@ from pathlib import Path
 from typing import Dict, List
 
 # ── third‑party ────────────────────────────────────────────────
-import google.generativeai as genai
-from google.genai.types import Content, Part
+#import google.generativeai as genai
+#from google.genai.types import Content, Part
 from PIL import Image
+from google import genai
+from google.genai import types
 
 # ── local ──────────────────────────────────────────────────────
 # NEW – GDPR docs ------------------------------------------------
@@ -72,9 +74,9 @@ if "_page_timer" not in st.session_state:
     page_timer_start("home")
 
 # ── study-condition toggle ────────────────────────────────────────────
-# True  → personalised explanations
-# False → generic explanations
-DEFAULT_PERSONALISED: bool = True            # ← change this for each study run
+# True  -> personalised explanations
+# False -> generic explanations
+DEFAULT_PERSONALISED: bool = False            # ← change this for each study run
 
 # ---------------------------------------------------------------------
 # set study condition from the constant above (runs once per session)
@@ -87,8 +89,8 @@ if "condition_chosen" not in st.session_state:
 # ───────────────────────────────────────────────────────────────
 # Globals & constants
 # ───────────────────────────────────────────────────────────────
-DEV_MODE: bool = True
-TOPIC: str = "'Machine Learning Techniques for Detecting Email Threats'"
+DEV_MODE: bool = False
+TOPIC: str = "'Introduction to Cancer Biology'"
 API_KEY: str = "AIzaSyArkmZSrZaeWQSfL9CFkQ0jXaEe4D9sMEQ"
 
 # Yiman = AIzaSyCdNS08cjO_lvj35Ytvs8szbUmeAdo4aIA
@@ -198,7 +200,7 @@ if st.session_state.current_page == "home":
         f"""
 ### Welcome – what this session is about  
 You are taking part in our KU Leuven study on **AI‑generated, personalised learning explanations**.  
-We want to find out whether explanations that match a learner's background help them understand course material better than generic ones.
+We are studying whether tailoring explanations to a learner’s background affects their understanding of the material compared to providing general explanations.
 
 In today's session, it will be about **{TOPIC}**.
 
@@ -223,12 +225,12 @@ In today's session, it will be about **{TOPIC}**.
 
 ---
 #### Why we record your data  
-We log your inputs and the system's responses to analyse how well the personalised tutor works.  
+We log your inputs and the system's responses to analyse the tutor’s effectiveness.  
 Your name is replaced by a random code; you may stop at any moment without penalty.
 
 ---
 When you are ready, click **“Start the Student Profile Survey”** below.  
-Thank you for helping us improve personalised learning!
+Thank you for helping us improve adaptive learning experiences!
 """
     )
     # --- GDPR / informed-consent box ---------------------------------
@@ -289,7 +291,8 @@ Thank you for helping us improve personalised learning!
 
 
     # — dev helper ---------------------------------------------------------
-    if DEV_MODE and st.button("Enable Fast Test Mode (Dev Only)"):
+    if DEV_MODE:
+        st.button("Enable Fast Test Mode (Dev Only)")
         st.session_state["fast_test_mode"] = True
         # minimal stubs used by Gemini_UI
         st.session_state.exported_images = [
@@ -428,13 +431,19 @@ elif st.session_state.current_page == "personalized_learning":
             f"This component lets you generate explanations with the uploaded slides and lecture audio."
         )
 
-        genai.configure(api_key=API_KEY)
+        #genai.configure(api_key=API_KEY)
+        client = genai.Client(  api_key=API_KEY# picks up GEMINI_API_KEY env automatically
+            # http_options={"api_version": "v1alpha"}  # optional if you need early features
+        )
 
         # … after starting the chat object …
         if "gemini_chat" not in st.session_state:
-            model = genai.GenerativeModel("gemini-2.5-pro-exp-03-25")
-            st.session_state.gemini_chat = model.start_chat(history=[])
-
+            #model = genai.GenerativeModel("gemini-2.0-flash-thinking-exp-01-21")
+            #st.session_state.gemini_chat = model.start_chat(history=[])
+            st.session_state.gemini_chat = client.chats.create(
+                model="gemini-2.5-flash",
+                history=[]
+            )
             PERSONALISED = st.session_state.get("use_personalisation", True)
 
             base_ctx = make_base_context(
@@ -455,56 +464,145 @@ elif st.session_state.current_page == "personalized_learning":
             #    {"role": "system", "content": json.dumps(base_ctx, indent=2)}
             #)
 
+        
+        #        # Sidebar uploads -------------------------------------------------
+        #        st.sidebar.header("Input Files")
+        #        audio_up = st.sidebar.file_uploader(
+        #            "Upload Audio File", ["wav", "mp3", "ogg", "flac", "m4a", "mp4"]
+        #        )
+        #        ppt_up = st.sidebar.file_uploader("Upload PPT", ["ppt", "pptx"])
+        #        st.sidebar.success("✅ Profile loaded from survey responses")
+
+        
 
         if DEV_MODE:
+            # Live interaction tracking for development
+            interaction_counts = get_learning_logger().get_interaction_counts()
             st.sidebar.info(
                 f"📝 {len(get_learning_logger().log_entries)} interactions buffered"
             )
+            st.sidebar.metric("Slide Explanations", interaction_counts["slide_explanations"])
+            st.sidebar.metric("Manual Chat", interaction_counts["manual_chat"]) 
+            st.sidebar.metric("Total User Interactions", interaction_counts["total_user_interactions"])
+            # Sidebar: Input Files
+            st.sidebar.header("Input Files")
+            audio_up = st.sidebar.file_uploader("Upload Audio File", ["wav", "mp3", "ogg", "flac", "m4a", "mp4"])
+            ppt_up   = st.sidebar.file_uploader("Upload PPT", ["ppt", "pptx"])
+            #st.sidebar.success("✅ Profile loaded from survey responses")
+            # Debug toggles ---------------------------------------------------
+            if st.checkbox("Show Debug Logs"):
+                st.subheader("Debug Logs")
+                for l in st.session_state.get("debug_logs", []):
+                    st.text(l)
+            if st.checkbox("Show Parsed Profile"):
+                st.json(st.session_state.profile_dict)
+            # Handle audio upload -------------------------------------------
+            if audio_up is not None:
+                a_path = UPLOAD_DIR_AUDIO / audio_up.name
+                a_path.write_bytes(audio_up.getbuffer())
+                st.sidebar.success(f"Saved {audio_up.name}")
+                if st.sidebar.button("Transcribe Audio"):
+                    st.session_state.transcription_text = transcribe_audio_from_file(a_path)
+                    st.sidebar.success("Transcription complete!")
 
-        # Sidebar uploads -------------------------------------------------
-        st.sidebar.header("Input Files")
-        audio_up = st.sidebar.file_uploader(
-            "Upload Audio File", ["wav", "mp3", "ogg", "flac", "m4a", "mp4"]
-        )
-        ppt_up = st.sidebar.file_uploader("Upload PPT", ["ppt", "pptx"])
-        st.sidebar.success("✅ Profile loaded from survey responses")
-
-        # Debug toggles ---------------------------------------------------
-        if st.checkbox("Show Debug Logs"):
-            st.subheader("Debug Logs")
-            for l in st.session_state.get("debug_logs", []):
-                st.text(l)
-        if st.checkbox("Show Parsed Profile"):
-            st.json(st.session_state.profile_dict)
-
-        # Handle audio upload -------------------------------------------
-        if audio_up is not None:
-            a_path = UPLOAD_DIR_AUDIO / audio_up.name
-            a_path.write_bytes(audio_up.getbuffer())
-            st.sidebar.success(f"Saved {audio_up.name}")
-            if st.sidebar.button("Transcribe Audio"):
-                st.session_state.transcription_text = transcribe_audio_from_file(a_path)
-                st.sidebar.success("Transcription complete!")
-
-        # Handle PPT upload ---------------------------------------------
-        if ppt_up is not None:
-            p_path = UPLOAD_DIR_PPT / ppt_up.name
-            p_path.write_bytes(ppt_up.getbuffer())
-            st.sidebar.success(f"Saved {ppt_up.name}")
-            if st.sidebar.button("Process PPT"):
-                st.session_state.exported_images = process_ppt_file(p_path)
-                st.sidebar.success(
-                    f"Exported {len(st.session_state.exported_images)} slides"
+            # Handle PPT upload ---------------------------------------------
+            if ppt_up is not None:
+                p_path = UPLOAD_DIR_PPT / ppt_up.name
+                p_path.write_bytes(ppt_up.getbuffer())
+                st.sidebar.success(f"Saved {ppt_up.name}")
+                if st.sidebar.button("Process PPT"):
+                    st.session_state.exported_images = process_ppt_file(p_path)
+                    st.sidebar.success(
+                        f"Exported {len(st.session_state.exported_images)} slides"
                 )
+        else:
+            # Production mode: Use pre-processed Cancer Biology content
+            st.sidebar.header("Course Content")
+            st.sidebar.info("📚 **Introduction to Cancer Biology**\n\nUsing pre-loaded course materials:\n- 27 lecture slides\n- Complete audio transcription")
+            
+            # Load pre-transcribed Cancer Biology content
+            if not st.session_state.transcription_text:
+                transcription_file = TRANSCRIPTION_DIR / "turbo_transcription_Introduction to Cancer Biology.txt"
+                if transcription_file.exists():
+                    try:
+                        st.session_state.transcription_text = transcription_file.read_text(encoding="utf-8")
+                        st.sidebar.success(f"✅ Transcription loaded ({len(st.session_state.transcription_text):,} chars)")
+                        debug_log(f"Loaded Cancer Biology transcription from {transcription_file.name}")
+                    except Exception as e:
+                        st.sidebar.error(f"❌ Error loading transcription: {e}")
+                        debug_log(f"Error loading transcription: {e}")
+                else:
+                    st.sidebar.error("❌ Cancer Biology transcription not found")
+                    debug_log(f"Transcription file not found: {transcription_file}")
+            else:
+                st.sidebar.success(f"✅ Transcription loaded ({len(st.session_state.transcription_text):,} chars)")
+            
+            # Load pre-processed Cancer Biology slides  
+            if not st.session_state.exported_images:
+                slides_dir = UPLOAD_DIR_PPT / "fixed" / "picture"
+                if slides_dir.exists():
+                    slide_files = list(slides_dir.glob("Slide_*.jpg"))
+                    if slide_files:
+                        # Sort numerically by extracting the number from the filename
+                        def extract_slide_number(path):
+                            import re
+                            match = re.search(r'Slide_(\d+)', path.name)
+                            return int(match.group(1)) if match else 0
+                        
+                        slide_files = sorted(slide_files, key=extract_slide_number)
+                        st.session_state.exported_images = slide_files
+                        st.sidebar.success(f"✅ {len(slide_files)} slides loaded")
+                        debug_log(f"Loaded {len(slide_files)} Cancer Biology slides from {slides_dir}")
+                        
+                        # Debug: show the first and last few slide names to verify sorting
+                        first_few = [f.name for f in slide_files[:5]]
+                        last_few = [f.name for f in slide_files[-3:]]
+                        debug_log(f"First 5 slides: {first_few}")
+                        debug_log(f"Last 3 slides: {last_few}")
+                        
+                        # Debug: show extracted numbers to verify sorting function
+                        extracted_numbers = [extract_slide_number(f) for f in slide_files[:10]]
+                        debug_log(f"First 10 extracted numbers: {extracted_numbers}")
+                    else:
+                        st.sidebar.error("❌ No slide images found in slides directory")
+                        debug_log(f"No slide files found in {slides_dir}")
+                else:
+                    st.sidebar.error("❌ Slides directory not found")
+                    debug_log(f"Slides directory not found: {slides_dir}")
+            else:
+                st.sidebar.success(f"✅ {len(st.session_state.exported_images)} slides loaded")
+
+
+
 
         # Slide selector --------------------------------------------------
         if st.session_state.exported_images:
-            slides = [
-                f"Slide {i+1}" for i in range(len(st.session_state.exported_images))
-            ]
+            # Since files are already sorted numerically, create simple sequential labels
+            slides = [f"Slide {i+1}" for i in range(len(st.session_state.exported_images))]
+            
             selected_slide = st.sidebar.selectbox(
                 "Select a Slide", slides, key="selected_slide"
             )
+            
+            # Show current slide filename for debugging
+            if selected_slide:
+                try:
+                    # Extract index from the dropdown selection (Slide 1 = index 0, etc.)
+                    slide_idx = int(selected_slide.split()[1]) - 1
+                    if 0 <= slide_idx < len(st.session_state.exported_images):
+                        current_file = st.session_state.exported_images[slide_idx].name
+                        st.sidebar.caption(f"File: {current_file}")
+                        
+                        # Extract actual slide number from filename for verification
+                        import re
+                        match = re.search(r'Slide_(\d+)', current_file)
+                        if match:
+                            actual_slide_num = match.group(1)
+                            expected_slide_num = str(slide_idx + 1)
+                            if actual_slide_num != expected_slide_num:
+                                st.sidebar.warning(f"⚠️ Mismatch: Selected {selected_slide} but showing Slide_{actual_slide_num}")
+                except (ValueError, IndexError):
+                    st.sidebar.error("Error parsing slide selection")
         else:
             selected_slide = None
 
@@ -529,7 +627,17 @@ elif st.session_state.current_page == "personalized_learning":
                     "UserQuestion": user_chat
                 })
 
-                reply = st.session_state.gemini_chat.send_message(payload)
+                #reply = st.session_state.gemini_chat.send_message(payload)
+                
+                # Create thinking config step by step for debugging
+                thinking_config = types.ThinkingConfig(includeThoughts=True)
+                content_config = types.GenerateContentConfig(thinking_config=thinking_config)
+                
+                reply = st.session_state.gemini_chat.send_message(
+                    payload,
+                    config=content_config
+                )
+                
                 st.session_state.messages.extend(
                     [
                         {"role": "user", "content": user_chat},
@@ -563,7 +671,11 @@ elif st.session_state.current_page == "personalized_learning":
                 )
                 debug_log(prompt_json)
 
-                reply = st.session_state.gemini_chat.send_message([img, prompt_json])
+                # Create thinking config step by step for debugging
+                thinking_config = types.ThinkingConfig(includeThoughts=True)
+                content_config = types.GenerateContentConfig(thinking_config=thinking_config)
+                
+                reply = st.session_state.gemini_chat.send_message([img, prompt_json], config=content_config)
 
                 summary = create_summary_prompt(
                     st.session_state.profile_dict,
@@ -594,7 +706,22 @@ elif st.session_state.current_page == "personalized_learning":
                 st.rerun()
 
             if not ready:
-                st.info("Upload & process audio + PPT to enable prompting.")
+                # Check what's missing and provide specific guidance
+                missing_items = []
+                if not st.session_state.transcription_text:
+                    missing_items.append("audio transcription")
+                if not st.session_state.exported_images:
+                    missing_items.append("lecture slides") 
+                if not st.session_state.profile_dict:
+                    missing_items.append("student profile")
+                
+                if missing_items:
+                    if "student profile" in missing_items and len(missing_items) == 1:
+                        st.info("📝 Complete the Student Profile Survey first to enable explanation generation.")
+                    else:
+                        st.info(f"⏳ Loading course content... Missing: {', '.join(missing_items)}")
+                else:
+                    st.info("⏳ Preparing explanation generator...")
 
         # ----- preview column -------------------------------------------
         with col_prev:
@@ -704,5 +831,13 @@ elif st.session_state.current_page == "ueq_survey":
                 navigate_to("knowledge_test")
         with col_f:
             if st.button("Finish"):
+                # Generate final consolidated analytics
+                try:
+                    sm = get_session_manager()
+                    final_analytics_path = sm.create_final_analytics()
+                    st.success(f"Thank you for completing all components of the platform!")
+                    st.info(f"Final research analytics saved: `{os.path.basename(final_analytics_path)}`")
+                except Exception as e:
+                    st.warning(f"Could not generate final analytics: {e}")
+                    st.success("Thank you for completing all components of the platform!")
                 navigate_to("home")
-                st.success("Thank you for completing all components of the platform!")

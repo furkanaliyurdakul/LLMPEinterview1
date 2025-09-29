@@ -1,0 +1,40 @@
+Student Profile Survey Responses:
+====================================
+
+Section 1: Academic and Background Information
+---------------------------------------------
+1. Name: Lotte Kesteleyn
+2. Age: 23
+3. Study background: Graduate (Master's)
+4. Major of education: engineering technology - EA/ICT
+5. Work experience: Entry-level
+6. Hobbies or interests: I played korfball before, now i mainly go running. I participate in studentunions, first Industria and now Emergent. So data science, AI, webtech stuff do interest me. I'm also rather crafty.
+
+7. Academic performance ranking (1=Weakest, 5=Strongest):
+   A. Mathematics: 3
+   B. Language Arts (reading, writing, speaking, listening, critical thinking): 4
+   C. English : 4
+   D. Science (Biology, Chemistry, Physics): 3
+   E. Social Studies (History, Politics, Geography, Economics): 2
+   F. Business & Finance: 1
+   G. Computer Science/Programming: 5
+   H. Engineering/Technology: 4
+   I. Health & Medicine: 1
+   J. Arts & Music: 1
+   K. Foreign Languages: 3
+
+8. Strongest Subject: communication for management
+9. Most Challenging Subject: elektromechanical field
+
+10. Learning priorities ranking (1=least important, 5=most important):
+   A. Mastering relevant formulas and equations: 3
+   B. Understanding interrelationships among various concepts: 4
+   C. Grasping core concepts and key techniques: 5
+   D. Applying theory to real-world problems: 4
+   E. Critically analyzing and evaluating information: 3
+
+11. Preferred learning strategy: Interactive problem-solving exercises and guided project-based tasks; Detailed, step-by-step explanations similar to in-depth lectures; Concise summaries and comprehensive textbook reviews
+12. Current proficiency level: Intermediate (I have a basic understanding but need improvement)
+13. Short-term academic goals: Improve foundational skills and core concepts; Gain new knowledge in specific areas
+14. Long-term academic/career goals: Advance my career or professional skills in this field
+15. Potential Barriers: Lack of quality resources or guidance

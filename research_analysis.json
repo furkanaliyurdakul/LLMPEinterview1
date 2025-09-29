@@ -1,0 +1,123 @@
+{
+    "total_sessions": 5,
+    "conditions": {
+        "personalized": 5,
+        "generic": 0
+    },
+    "session_timing_analysis": {
+        "personalized": {
+            "total_session_time_stats": {
+                "mean": 4.04322661028968,
+                "median": 1.4383938352266947,
+                "std_dev": 5.701500953564068,
+                "min": 0.10939932664235433,
+                "max": 10.58188666899999,
+                "count": 3
+            },
+            "learning_phase_time_stats": {
+                "mean": 0.8160230616728464,
+                "median": 0.8160230616728464,
+                "std_dev": 0.08274374104822016,
+                "min": 0.7575144012769063,
+                "max": 0.8745317220687866,
+                "count": 2
+            }
+        }
+    },
+    "interaction_analysis": {
+        "personalized": {
+            "total_interactions_stats": {
+                "mean": 2.5,
+                "median": 2.5,
+                "std_dev": 0.7071067811865476,
+                "min": 2,
+                "max": 3,
+                "count": 2
+            },
+            "interaction_breakdown": {
+                "slide_explanations": {
+                    "mean": 1,
+                    "total": 2
+                },
+                "manual_chat": {
+                    "mean": 1.5,
+                    "total": 3
+                }
+            },
+            "slide_to_chat_ratio_stats": {
+                "mean": 0.75,
+                "median": 0.75,
+                "std_dev": 0.3535533905932738
+            }
+        }
+    },
+    "ueq_analysis": {},
+    "knowledge_test_analysis": {},
+    "learning_efficiency_analysis": {
+        "personalized": {
+            "interactions_per_minute_stats": {
+                "mean": 3.1236294724901867,
+                "median": 3.1236294724901867,
+                "std_dev": 1.1832601488117889,
+                "count": 2
+            },
+            "avg_time_per_interaction_stats": {
+                "mean": 20.69311984380086,
+                "median": 20.69311984380086,
+                "std_dev": 7.838747931340284
+            }
+        }
+    },
+    "detailed_sessions": [
+        {
+            "session_id": "20250922_142642_Parker_Williams",
+            "pseudonym": "142642_Parker_Williams",
+            "condition": "personalised",
+            "total_time_minutes": 0.10939932664235433,
+            "total_interactions": null,
+            "knowledge_accuracy": null,
+            "has_ueq_data": false,
+            "has_profile_data": false
+        },
+        {
+            "session_id": "20250922_142710_Val_Nguyen",
+            "pseudonym": "142710_Val_Nguyen",
+            "condition": "personalised",
+            "total_time_minutes": 1.4383938352266947,
+            "total_interactions": 2,
+            "knowledge_accuracy": null,
+            "has_ueq_data": false,
+            "has_profile_data": false
+        },
+        {
+            "session_id": "20250922_142955_Winter_Smith",
+            "pseudonym": "142955_Winter_Smith",
+            "condition": "personalised",
+            "total_time_minutes": 10.58188666899999,
+            "total_interactions": 3,
+            "knowledge_accuracy": null,
+            "has_ueq_data": false,
+            "has_profile_data": false
+        },
+        {
+            "session_id": "20250922_144644_Jordan_Miller",
+            "pseudonym": "144644_Jordan_Miller",
+            "condition": "personalised",
+            "total_time_minutes": null,
+            "total_interactions": null,
+            "knowledge_accuracy": null,
+            "has_ueq_data": false,
+            "has_profile_data": false
+        },
+        {
+            "session_id": "20250922_144728_Zephyr_Foster",
+            "pseudonym": "144728_Zephyr_Foster",
+            "condition": "personalised",
+            "total_time_minutes": null,
+            "total_interactions": null,
+            "knowledge_accuracy": null,
+            "has_ueq_data": false,
+            "has_profile_data": false
+        }
+    ]
+}

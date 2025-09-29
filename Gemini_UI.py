@@ -15,12 +15,12 @@ import time
 from pathlib import Path
 
 # Heavy / Windows‑only libs are *imported* but only initialised when needed
-import pythoncom
+# import pythoncom  # Disabled for Linux deployment
 
 # ── third‑party ────────────────────────────────────────────────────────────
 import streamlit as st
-import whisper
-import win32com.client
+# import whisper  # Disabled - using pre-transcribed content
+# import win32com.client  # Disabled for Linux deployment
 
 # ── local ─────────────────────────────────────────────────────────────────
 from session_manager import get_session_manager
@@ -123,11 +123,16 @@ def create_summary_prompt(profile: dict, slide: str, personalised: bool = True) 
     """Return the user‑facing summary prompt passed to Gemini."""
     label_loc = "Personalised" if personalised else "Generic"
 
+    return (
+        f"Generate an explanation for {slide}. "
+    )
+
+""" potential bias
     if not personalised:
         return (
-            f"Generating a {label_loc} explanation for {slide}. "
-            "Please keep the wording suitable for an average under‑grad audience."
+            f"Generate an explanation for {slide}. "
         )
+
 
     name = profile.get("Name", "the student")
     proficiency = profile.get("CurrentProficiency", "unknown level")
@@ -146,7 +151,7 @@ def create_summary_prompt(profile: dict, slide: str, personalised: bool = True) 
         f"Language complexity and examples will reflect their interests "
         f"({', '.join(profile.get('Hobbies', []))}) and major ({profile.get('Major', 'N/A')})."
     )
-
+"""
 
 def create_structured_prompt(
     slide_txt: str, transcript: str, profile: dict, slide: str
@@ -301,53 +306,19 @@ def transcribe_audio(audio_path: Path) -> str:
         debug_log(f"Using cached transcription: {trans_path.name}")
         return trans_path.read_text(encoding="utf‑8")
 
-    debug_log(f"Loading Whisper model '{model_name}' …")
-    whisper_model = whisper.load_model(model_name)
-
-    start = time.time()
-    result = whisper_model.transcribe(
-        str(audio_path),
-        language="en",
-        fp16=False,
-        verbose=False,
-        patience=2,
-        beam_size=5,
-    )
-    debug_log(f"Whisper latency: {time.time() - start:.1f}s")
-
-    trans_path.write_text(result["text"], encoding="utf‑8")
-    return result["text"]
+    # DISABLED FOR DEPLOYMENT: Whisper functionality disabled for Linux deployment
+    debug_log("Whisper functionality disabled - returning empty transcription")
+    return "Transcription functionality disabled - using pre-transcribed content"
 
 
 def export_ppt_slides(ppt_path: Path) -> list[Path]:
-    """Return a list of exported PNG slide paths given a .pptx file."""
-    pythoncom.CoInitialize()
-    ppt_app = win32com.client.Dispatch("PowerPoint.Application")
-    ppt_app.Visible = True
-
-    img_dir = ppt_path.parent / "picture"
-    img_dir.mkdir(exist_ok=True)
-
-    try:
-        pres = ppt_app.Presentations.Open(
-            str(ppt_path), ReadOnly=True, WithWindow=False
-        )
-    except Exception as e:  # noqa: BLE001
-        debug_log(f"PowerPoint error: {e}")
-        pythoncom.CoUninitialize()
-        return []
-
-    exported: list[Path] = []
-    for slide in pres.Slides:
-        out = img_dir / f"Slide_{slide.SlideIndex} of {ppt_path.stem}.png"
-        slide.Export(str(out), "PNG")
-        exported.append(out)
-        debug_log(f"Exported {out.name}")
-
-    pres.Close()
-    ppt_app.Quit()
-    pythoncom.CoUninitialize()
-    return exported
+    """Return a list of exported PNG slide paths given a .pptx file.
+    
+    DISABLED FOR DEPLOYMENT: This function is disabled for Linux deployment.
+    Pre-processed slides are used instead.
+    """
+    debug_log("export_ppt_slides called but disabled for deployment")
+    return []
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -377,7 +348,7 @@ def build_prompt(
             "Slides": {"content": slide_txt},
             "Transcript": {"content": transcript},
         },
-        "Objective": f"Give a clear, generic explanation of {slide}"
+        "Objective": f"Provide an educational explanation of {slide} based on the lecture content"
     }
     return json.dumps(base, indent=2)
 
@@ -388,7 +359,7 @@ def build_prompt(
 
 
 def main() -> None:
-    st.title(f"{label} Explanation Generator")
+    st.title(f"Explanation Generator - Introduction to Cancer Biology")
 
     # 1) Fast‑test stub ---------------------------------------------------
     if FAST_TEST_MODE:
@@ -416,6 +387,28 @@ def main() -> None:
             },
         }
         st.session_state.selected_slide = "Slide 1"
+    else:
+        # Production mode: Load Cancer Biology content automatically
+        if not st.session_state.exported_images:
+            # Load all Cancer Biology slides
+            cancer_slides_dir = ROOT / "uploads" / "ppt" / "fixed" / "picture"
+            if cancer_slides_dir.exists():
+                slide_files = sorted(cancer_slides_dir.glob("Slide_*.jpg"))
+                st.session_state.exported_images = slide_files
+                debug_log(f"Loaded {len(slide_files)} Cancer Biology slides")
+        
+        if not st.session_state.transcription_text:
+            # Load Cancer Biology transcription
+            transcription_file = TRANSCRIPTION_DIR / "turbo_transcription_Introduction to Cancer Biology.txt"
+            if transcription_file.exists():
+                st.session_state.transcription_text = transcription_file.read_text(encoding="utf‑8")
+                debug_log(f"Loaded Cancer Biology transcription from {transcription_file.name}")
+        
+        # Profile is created fresh each session through the learning platform
+        # No preloading needed in production mode
+        
+        if not st.session_state.selected_slide:
+            st.session_state.selected_slide = "Slide 1"
 
     # 2) Load profile from session dir if already stored ------------------
     if not st.session_state.profile_dict:
@@ -427,13 +420,14 @@ def main() -> None:
             st.session_state.profile_dict = parse_detailed_student_profile(prof_txt)
             debug_log(f"Loaded profile from {orig_profile}")
 
-    # 3) Sidebar – uploads -------------------------------------------------
-    st.sidebar.header("Input Files")
-    audio_up = st.sidebar.file_uploader(
-        "Upload Audio File", ["wav", "mp3", "ogg", "flac", "m4a", "mp4"]
-    )
-    ppt_up = st.sidebar.file_uploader("Upload PPT", ["ppt", "pptx"])
-    profile_up = st.sidebar.file_uploader("Upload Student Profile (TXT)", ["txt"])
+    # 3) Sidebar – content information -------------------------------------
+    # Show content status
+    if st.session_state.exported_images:
+        st.sidebar.success(f"✅ {len(st.session_state.exported_images)} slides loaded")
+    if st.session_state.transcription_text:
+        st.sidebar.success("✅ Transcription loaded")
+    if st.session_state.profile_dict:
+        st.sidebar.success("✅ Student profile loaded")
 
     # -- debug toggles ----------------------------------------------------
     if st.checkbox("Show Debug Logs"):
@@ -444,38 +438,8 @@ def main() -> None:
     if st.checkbox("Show Parsed Profile"):
         st.json(st.session_state.profile_dict)
 
-    # 3a) audio -----------------------------------------------------------
-    if audio_up is not None:
-        audio_path = UPLOAD_DIR_AUDIO / audio_up.name
-        audio_path.write_bytes(audio_up.getbuffer())
-        st.sidebar.success(f"Saved {audio_up.name}")
-        if st.sidebar.button("Transcribe Audio"):
-            st.session_state.transcription_text = transcribe_audio(audio_path)
-            st.sidebar.success("Transcription complete!")
-            st.rerun()
-
-    # 3b) slides ----------------------------------------------------------
-    if ppt_up is not None:
-        ppt_path = UPLOAD_DIR_PPT / ppt_up.name
-        ppt_path.write_bytes(ppt_up.getbuffer())
-        st.sidebar.success(f"Saved {ppt_up.name}")
-        if st.sidebar.button("Process PPT"):
-            st.session_state.exported_images = export_ppt_slides(ppt_path)
-            st.sidebar.success(
-                f"Exported {len(st.session_state.exported_images)} slides"
-            )
-            st.rerun()
-
-    # 3c) profile ---------------------------------------------------------
-    if profile_up is not None:
-        prof_path = UPLOAD_DIR_PROFILE / profile_up.name
-        prof_path.write_bytes(profile_up.getbuffer())
-        st.sidebar.success(f"Saved {profile_up.name}")
-        st.session_state.profile_text = prof_path.read_text(encoding="utf‑8")
-        st.session_state.profile_dict = parse_detailed_student_profile(
-            st.session_state.profile_text
-        )
-        st.rerun()
+    # Content is pre-loaded in production mode - no upload processing needed
+    # Profile is created fresh each session through the learning platform
 
     # 4) Sidebar – slide selector ----------------------------------------
     if st.session_state.exported_images:

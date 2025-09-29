@@ -1,0 +1,14 @@
+# --- core -------------------------------------------------------
+streamlit==1.32.2          # UI framework
+
+# --- Google Gemini client --------------------------------------
+google-generativeai==0.8.5  # gives you `google.generativeai` & `google.genai.*`
+google-genai==1.3.0
+
+# --- images -----------------------------------------------------
+Pillow>=10.0.0              # provides `PIL.Image`
+
+# DEPLOYMENT NOTE: Removed Windows-only dependencies for Linux deployment
+# - openai-whisper (using pre-transcribed content instead)
+# - torch stack (not needed without whisper)  
+# - win32com/pywin32 (PowerPoint automation, using pre-processed slides)

@@ -1,0 +1,40 @@
+Student Profile Survey Responses:
+====================================
+
+Section 1: Academic and Background Information
+---------------------------------------------
+1. Name: Bruno Hyska
+2. Age: 26
+3. Study background: Graduate (Master's)
+4. Major of education: Electronic Engineering
+5. Work experience: Entry-level
+6. Hobbies or interests: Swimming, watching crime docu-series, travelling 
+
+7. Academic performance ranking (1=Weakest, 5=Strongest):
+   A. Mathematics: 4
+   B. Language Arts (reading, writing, speaking, listening, critical thinking): 4
+   C. English : 4
+   D. Science (Biology, Chemistry, Physics): 4
+   E. Social Studies (History, Politics, Geography, Economics): 4
+   F. Business & Finance: 3
+   G. Computer Science/Programming: 3
+   H. Engineering/Technology: 3
+   I. Health & Medicine: 3
+   J. Arts & Music: 3
+   K. Foreign Languages: 3
+
+8. Strongest Subject: Mathematics, physics
+9. Most Challenging Subject: Chemistry
+
+10. Learning priorities ranking (1=least important, 5=most important):
+   A. Mastering relevant formulas and equations: 3
+   B. Understanding interrelationships among various concepts: 4
+   C. Grasping core concepts and key techniques: 4
+   D. Applying theory to real-world problems: 3
+   E. Critically analyzing and evaluating information: 3
+
+11. Preferred learning strategy: Real-world case studies with practical examples; Interactive problem-solving exercises and guided project-based tasks; Detailed, step-by-step explanations similar to in-depth lectures; Adaptive quizzes or exams
+12. Current proficiency level: Beginner (I am new to this subject)
+13. Short-term academic goals: Improve foundational skills and core concepts; Gain new knowledge in specific areas
+14. Long-term academic/career goals: Engage in research, innovation, or entrepreneurship
+15. Potential Barriers: Lack of quality resources or guidance

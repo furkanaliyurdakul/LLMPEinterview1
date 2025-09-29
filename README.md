@@ -15,8 +15,11 @@ output/
   │   ├── knowledge_test/           # quiz results
   │   ├── learning_logs/            # tutor‑chat logs
   │   ├── ueq/                      # UEQ answers + benchmark
+  │   ├── analytics/                # interaction analytics & final research data
+  │   │   ├── interaction_analytics.json
+  │   │   └── final_research_analytics.json  # ★ Comprehensive research data
   │   └── meta/                     # page‑timer JSON, etc.
-  └── …
+  └── research_analysis.json        # ★ Aggregate analysis across all sessions
 ```
 
 ### Pseudonymisation in a nutshell
@@ -53,6 +56,33 @@ DEFAULT_PERSONALISED: bool = True  # True → personalised, False → generic
 3. `SessionManager` writes the chosen condition to `output/…/condition.txt` so it is visible during analysis.
 
 *Tip:* when `DEV_MODE = True` you can still uncomment the old facilitator radio‑button to flip the condition interactively while testing.
+
+---
+## Research Analytics System
+
+This platform includes a comprehensive analytics system that automatically consolidates all research data into a single JSON file per session. When participants complete the study (finish UEQ survey), a `final_research_analytics.json` file is generated containing:
+
+- **Session info**: ID, condition, pseudonym, timestamps
+- **Page timings**: Time spent on each phase of the study
+- **Interaction data**: AI interactions, slide explanations, manual chat
+- **UEQ results**: Survey responses, scale scores, benchmark grades
+- **Knowledge test**: Answers, accuracy, performance metrics
+- **Summary metrics**: Learning efficiency, engagement patterns
+
+### Analytics Tools
+
+```bash
+# Generate final analytics for all sessions
+python generate_final_analytics.py
+
+# Generate for specific session
+python generate_final_analytics.py --session 20250922_142955_Winter_Smith
+
+# Create aggregate research analysis
+python analyze_research_data.py
+```
+
+See **`ANALYTICS_DOCUMENTATION.md`** for complete details on the analytics system and research data structure.
 
 ---
 ## Running the app

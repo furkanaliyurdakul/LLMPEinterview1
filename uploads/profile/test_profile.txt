@@ -1,0 +1,40 @@
+Student Profile Survey Responses:
+====================================
+
+Section 1: Academic and Background Information
+---------------------------------------------
+1. Name: test
+2. Age: 11
+3. Study background: Graduate (Master's)
+4. Major of education: test
+5. Work experience: Mid-level
+6. Hobbies or interests: test
+
+7. Academic performance ranking (1=Weakest, 5=Strongest):
+   A. Mathematics: 2
+   B. Language Arts (reading, writing, speaking, listening, critical thinking): 2
+   C. English : 2
+   D. Science (Biology, Chemistry, Physics): 2
+   E. Social Studies (History, Politics, Geography, Economics): 2
+   F. Business & Finance: 2
+   G. Computer Science/Programming: 2
+   H. Engineering/Technology: 2
+   I. Health & Medicine: 2
+   J. Arts & Music: 2
+   K. Foreign Languages: 2
+
+8. Strongest Subject: test
+9. Most Challenging Subject: test
+
+10. Learning priorities ranking (1=least important, 5=most important):
+   A. Mastering relevant formulas and equations: 2
+   B. Understanding interrelationships among various concepts: 2
+   C. Grasping core concepts and key techniques: 2
+   D. Applying theory to real-world problems: 2
+   E. Critically analyzing and evaluating information: 2
+
+11. Preferred learning strategy: Interactive problem-solving exercises and guided project-based tasks
+12. Current proficiency level: Advanced (I have a strong grasp of the subject)
+13. Short-term academic goals: Improve foundational skills and core concepts
+14. Long-term academic/career goals: Gain admission to a top university or specialized program
+15. Potential Barriers: Limited time or scheduling conflicts
