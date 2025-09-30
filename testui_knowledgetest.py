@@ -2,18 +2,19 @@ import datetime
 import os
 
 import streamlit as st
+from config import config
 
-st.title("🧬 Knowledge Test - Introduction to Cancer Biology")
+st.title(f"🧬 Knowledge Test - {config.course.course_title}")
 
 st.markdown(
-    """
-Welcome to the knowledge assessment on cancer biology and genetics. This brief test is designed to evaluate your understanding of key concepts in cancer development, genetics, and cellular processes through multiple-choice questions.
+    f"""
+Welcome to the knowledge assessment on {config.course.subject_area.lower()} and genetics. This brief test is designed to evaluate your understanding of key concepts in cancer development, genetics, and cellular processes through multiple-choice questions.
 
-The assessment consists of 5 questions that cover fundamental concepts in cancer biology including BRCA mutations, cancer genetics analogies, epigenetic regulation, genomic instability, and cellular processes in malignancy. You'll receive immediate feedback on your performance.
+The assessment consists of 5 questions that cover fundamental concepts in {config.course.subject_area.lower()} including BRCA mutations, cancer genetics analogies, epigenetic regulation, genomic instability, and cellular processes in malignancy. You'll receive immediate feedback on your performance.
 
 Feel free to trust your intuition and apply the knowledge you've gained from the lecture materials. Your spontaneous responses often best reflect your true understanding of these important biological concepts.
 
-At the end of the test, you'll be able to see your score and download your results for future reference. Remember, this is a learning opportunity to help you gauge your knowledge in cancer biology.
+At the end of the test, you'll be able to see your score and download your results for future reference. Remember, this is a learning opportunity to help you gauge your knowledge in {config.course.subject_area.lower()}.
 
 Ready to begin? Let's explore your understanding together!
 """

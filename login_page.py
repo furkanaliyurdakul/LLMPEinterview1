@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-"""Login page for the Cancer Biology Learning Platform.
+"""Login page for the AI Learning Platform.
 
 Provides secure authentication interface and session management.
 """
@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import streamlit as st
 from authentication import get_auth_manager, CredentialConfig
+from config import config
 
 
 def show_login_page() -> bool:
@@ -21,13 +22,13 @@ def show_login_page() -> bool:
     
     # Page configuration
     st.set_page_config(
-        page_title="Cancer Biology Study - Login",
+        page_title=f"{config.platform.platform_name} - Login",
         page_icon="🔬",
         layout="wide"
     )
     
     # Header
-    st.title("🔬 Cancer Biology Learning Platform")
+    st.title(f"🔬 {config.platform.platform_name}")
     st.markdown("---")
     
     # Main login interface
@@ -36,7 +37,7 @@ def show_login_page() -> bool:
     with col2:
         st.header("🔐 Secure Access")
         st.markdown("""
-        Welcome to the **Cancer Biology Learning Platform** research study.
+        Welcome to the **{config.platform.platform_name}** research study.
         
         Please enter your assigned credentials to access the platform.
         
@@ -112,7 +113,7 @@ def show_login_page() -> bool:
         st.subheader("📚 Study Information")
         st.markdown("""
         **Research Focus:**  
-        Investigating the effectiveness of AI-generated personalized learning explanations for cancer biology education.
+        Investigating the effectiveness of AI-generated personalized learning explanations for {config.course.subject_area.lower()} education.
         
         **Your Role:**  
         - Complete all platform components in sequence
@@ -166,7 +167,7 @@ def show_login_page() -> bool:
         """
         <div style='text-align: center; color: #666;'>
         <small>
-        Cancer Biology Learning Platform | KU Leuven Research Study 2025<br>
+        {config.platform.platform_name} | {config.platform.study_organization} Research Study {config.platform.study_year}<br>
         For technical support, contact the research team
         </small>
         </div>

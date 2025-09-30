@@ -19,6 +19,9 @@ from pathlib import Path
 
 # ── third‑party ────────────────────────────────────────────────────────────
 import streamlit as st
+
+# ── local imports ──────────────────────────────────────────────────────────
+from config import config
 # import whisper  # Disabled - using pre-transcribed content
 # import win32com.client  # Disabled for Linux deployment
 
@@ -361,7 +364,7 @@ def build_prompt(
 
 
 def main() -> None:
-    st.title(f"Explanation Generator - Introduction to Cancer Biology")
+    st.title(f"Explanation Generator - {config.course.course_title}")
 
     # 1) Fast‑test stub ---------------------------------------------------
     if FAST_TEST_MODE:
@@ -390,21 +393,21 @@ def main() -> None:
         }
         st.session_state.selected_slide = "Slide 1"
     else:
-        # Production mode: Load Cancer Biology content automatically
+        # Production mode: Load course content automatically
         if not st.session_state.exported_images:
-            # Load all Cancer Biology slides
+            # Load all course slides
             cancer_slides_dir = ROOT / "uploads" / "ppt" / "fixed" / "picture"
             if cancer_slides_dir.exists():
                 slide_files = sorted(cancer_slides_dir.glob("Slide_*.jpg"))
                 st.session_state.exported_images = slide_files
-                debug_log(f"Loaded {len(slide_files)} Cancer Biology slides")
+                debug_log(f"Loaded {len(slide_files)} {config.course.course_title} slides")
         
         if not st.session_state.transcription_text:
-            # Load Cancer Biology transcription
-            transcription_file = TRANSCRIPTION_DIR / "turbo_transcription_Introduction to Cancer Biology.txt"
+            # Load course transcription
+            transcription_file = TRANSCRIPTION_DIR / config.course.transcription_filename
             if transcription_file.exists():
                 st.session_state.transcription_text = transcription_file.read_text(encoding="utf‑8")
-                debug_log(f"Loaded Cancer Biology transcription from {transcription_file.name}")
+                debug_log(f"Loaded {config.course.course_title} transcription from {transcription_file.name}")
         
         # Profile is created fresh each session through the learning platform
         # No preloading needed in production mode
@@ -488,10 +491,10 @@ def main() -> None:
 
         # Video preview functionality
         try:
-            video_path = UPLOAD_DIR_VIDEO / "Introduction to Cancer Biology.mp4"
+            video_path = UPLOAD_DIR_VIDEO / config.course.video_filename
         except NameError:
             # Fallback if UPLOAD_DIR_VIDEO isn't defined
-            video_path = Path.cwd() / "uploads" / "video" / "Introduction to Cancer Biology.mp4"
+            video_path = Path.cwd() / "uploads" / "video" / config.course.video_filename
         
         if video_path.exists():
             st.subheader("Lecture Recording")
@@ -499,7 +502,7 @@ def main() -> None:
                 with open(video_path, "rb") as video_file:
                     video_bytes = video_file.read()
                 st.video(video_bytes)
-                st.caption("📹 Introduction to Cancer Biology - Full Lecture")
+                st.caption(f"📹 {config.course.course_title} - Full Lecture")
             except Exception as e:
                 st.error(f"Error loading video: {e}")
         else:

@@ -24,8 +24,12 @@ import streamlit as st
 from login_page import require_authentication
 credential_config = require_authentication()
 
-LABEL: str = "Learning" # internal flag stays in use_personalisation
-st.set_page_config(page_title=f"{LABEL} Platform", layout="wide")
+# ── Configuration ──────────────────────────────────────────────
+from config import get_config, get_course_title, get_platform_name, get_ui_text
+config = get_config()
+
+LABEL: str = config.platform.learning_section_name
+st.set_page_config(page_title=f"{get_platform_name()}", layout="wide")
 atexit.register(lambda: get_learning_logger().save_logs(force=True))
 atexit.register(lambda: page_dump(Path(sm.session_dir)))
 
@@ -99,14 +103,19 @@ if "condition_chosen" not in st.session_state:
         sm.condition = "personalised" if condition_override else "generic"
     
     # Set special modes based on credentials
-    st.session_state["dev_mode"] = credential_config.dev_mode
-    st.session_state["fast_test_mode"] = credential_config.fast_test_mode
+    if credential_config:
+        st.session_state["dev_mode"] = credential_config.dev_mode
+        st.session_state["fast_test_mode"] = credential_config.fast_test_mode
+    else:
+        # Default values when no authentication is active
+        st.session_state["dev_mode"] = False
+        st.session_state["fast_test_mode"] = False
 
 # ───────────────────────────────────────────────────────────────
 # Globals & constants
 # ───────────────────────────────────────────────────────────────
 DEV_MODE: bool = st.session_state.get("dev_mode", False)
-TOPIC: str = "Introduction to Cancer Biology"
+TOPIC: str = config.course.course_title
 API_KEY: str = st.secrets["google"]["api_key"]
 
 # Yiman = AIzaSyCdNS08cjO_lvj35Ytvs8szbUmeAdo4aIA
@@ -152,7 +161,7 @@ def navigate_to(page: str) -> None:
     elif page == "personalized_learning":
         allowed = st.session_state.profile_completed
         if not allowed:
-            st.warning("Please complete the Student Profile Survey first.")
+            st.warning(config.ui_text.warning_complete_profile)
     elif page == "knowledge_test":
         allowed = (
             st.session_state.profile_completed and st.session_state.learning_completed
@@ -195,11 +204,11 @@ def navigate_to(page: str) -> None:
 
 st.sidebar.title("Navigation")
 nav_items = [
-    ("🏠 Home", "home", True),
-    ("Student Profile Survey", "profile_survey", st.session_state.profile_completed),
+    (config.ui_text.nav_home, "home", True),
+    (config.ui_text.nav_profile, "profile_survey", st.session_state.profile_completed),
     (f"{LABEL}", "personalized_learning", st.session_state.learning_completed),
-    ("Knowledge Test", "knowledge_test", st.session_state.test_completed),
-    ("User Experience Survey", "ueq_survey", st.session_state.ueq_completed),
+    (config.ui_text.nav_knowledge, "knowledge_test", st.session_state.test_completed),
+    (config.ui_text.nav_ueq, "ueq_survey", st.session_state.ueq_completed),
 ]
 
 for title, target, done in nav_items:
@@ -216,7 +225,7 @@ if st.session_state.current_page == "home":
     # ------------------------------------------------------------------
     # HOME  ─ study intro
     # ------------------------------------------------------------------
-    st.title(f"🎓 {LABEL} Platform")
+    st.title(f"🎓 {config.platform.learning_section_name} Platform")
     st.markdown(
         f"""
 ### Welcome – what this session is about  
@@ -537,28 +546,28 @@ elif st.session_state.current_page == "personalized_learning":
                         f"Exported {len(st.session_state.exported_images)} slides"
                 )
         else:
-            # Production mode: Use pre-processed Cancer Biology content
+            # Production mode: Use pre-processed course content
             st.sidebar.header("Course Content")
-            st.sidebar.info("📚 **Introduction to Cancer Biology**\n\nUsing pre-loaded course materials:\n- 27 lecture slides\n- Complete audio transcription")
+            st.sidebar.info(f"📚 **{config.course.course_title}**\n\nUsing pre-loaded course materials:\n- {config.course.total_slides} lecture slides\n- Complete audio transcription")
             
-            # Load pre-transcribed Cancer Biology content
+            # Load pre-transcribed course content
             if not st.session_state.transcription_text:
-                transcription_file = TRANSCRIPTION_DIR / "turbo_transcription_Introduction to Cancer Biology.txt"
+                transcription_file = TRANSCRIPTION_DIR / config.course.transcription_filename
                 if transcription_file.exists():
                     try:
                         st.session_state.transcription_text = transcription_file.read_text(encoding="utf-8")
                         st.sidebar.success(f"✅ Transcription loaded ({len(st.session_state.transcription_text):,} chars)")
-                        debug_log(f"Loaded Cancer Biology transcription from {transcription_file.name}")
+                        debug_log(f"Loaded {config.course.course_title} transcription from {transcription_file.name}")
                     except Exception as e:
                         st.sidebar.error(f"❌ Error loading transcription: {e}")
                         debug_log(f"Error loading transcription: {e}")
                 else:
-                    st.sidebar.error("❌ Cancer Biology transcription not found")
+                    st.sidebar.error(f"❌ {config.course.course_title} transcription not found")
                     debug_log(f"Transcription file not found: {transcription_file}")
             else:
                 st.sidebar.success(f"✅ Transcription loaded ({len(st.session_state.transcription_text):,} chars)")
             
-            # Load pre-processed Cancer Biology slides  
+            # Load pre-processed course slides  
             if not st.session_state.exported_images:
                 slides_dir = UPLOAD_DIR_PPT / "fixed" / "picture"
                 if slides_dir.exists():
@@ -573,7 +582,7 @@ elif st.session_state.current_page == "personalized_learning":
                         slide_files = sorted(slide_files, key=extract_slide_number)
                         st.session_state.exported_images = slide_files
                         st.sidebar.success(f"✅ {len(slide_files)} slides loaded")
-                        debug_log(f"Loaded {len(slide_files)} Cancer Biology slides from {slides_dir}")
+                        debug_log(f"Loaded {len(slide_files)} {config.course.course_title} slides from {slides_dir}")
                         
                         # Debug: show the first and last few slide names to verify sorting
                         first_few = [f.name for f in slide_files[:5]]
@@ -777,14 +786,14 @@ elif st.session_state.current_page == "personalized_learning":
                     st.stop()
 
             # Video preview functionality
-            video_path = UPLOAD_DIR_VIDEO / "Introduction to Cancer Biology.mp4"
+            video_path = UPLOAD_DIR_VIDEO / config.course.video_filename
             if video_path.exists():
                 st.subheader("Lecture Recording")
                 try:
                     with open(video_path, "rb") as video_file:
                         video_bytes = video_file.read()
                     st.video(video_bytes)
-                    st.caption("📹 Introduction to Cancer Biology - Full Lecture")
+                    st.caption(f"📹 {config.course.course_title} - Full Lecture")
                 except Exception as e:
                     st.error(f"Error loading video: {e}")
             else:
@@ -890,17 +899,17 @@ elif st.session_state.current_page == "ueq_survey":
 # ------------------------------------------------------------------------
 elif st.session_state.current_page == "completion":
     # Clean completion page with upload processing in background
-    st.title("🎉 Interview Complete!")
+    st.title(config.ui_text.completion_title)
     
-    st.markdown("""
-    ## Thank you for participating!
+    st.markdown(f"""
+    ## {config.ui_text.completion_thank_you}
     
-    You have successfully completed all components of the Cancer Biology learning interview:
+    You have successfully completed all components of the {config.course.course_title} learning interview:
     
-    ✅ **Student Profile Survey**  
-    ✅ **Learning Experience**  
-    ✅ **Knowledge Assessment**  
-    ✅ **User Experience Questionnaire**
+    ✅ **{config.ui_text.nav_profile}**  
+    ✅ **{config.platform.learning_section_name}**  
+    ✅ **{config.ui_text.nav_knowledge}**  
+    ✅ **{config.ui_text.nav_ueq}**
     
     ---
     

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-"""Authentication system for the Cancer Biology Learning Platform.
+"""Authentication system for the AI Learning Platform.
 
 Manages secure login with different credential types for study participants
 and research team members. Organizes data collection by credential type.
