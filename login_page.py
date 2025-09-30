@@ -37,17 +37,9 @@ def show_login_page() -> bool:
     with col2:
         st.header("Secure Access")
         st.markdown("""
-        Welcome to the **{config.platform.platform_name}** research study.
+        Welcome to the platform.
         
-        Please enter your assigned credentials to access the platform.
-        
-        **For study participants:**
-        - Use the username and password provided by the research team
-        - Your session will be automatically configured for your assigned study condition
-        
-        **For research team members:**
-        - Use your development or demo credentials
-        - Additional configuration options will be available
+        Please enter your credentials to access the system.
         """)
         
         # Login form
@@ -75,7 +67,7 @@ def show_login_page() -> bool:
             
             if login_button:
                 if not username or not password:
-                    st.error("❌ Please enter both username and password")
+                    st.error("Please enter both username and password")
                 else:
                     # Attempt authentication
                     with st.spinner("Verifying credentials..."):
@@ -96,13 +88,13 @@ def show_login_page() -> bool:
                             st.session_state["dev_mode"] = credential_config.dev_mode
                             st.session_state["fast_test_mode"] = credential_config.fast_test_mode
                             
-                            st.success(f"✅ Authentication successful! Welcome, {credential_config.description}")
-                            st.info("🔄 Redirecting to platform...")
+                            st.success(f"Authentication successful! Welcome.")
+                            st.info("Redirecting to platform...")
                             
                             # Force page refresh to load main application
                             st.rerun()
                         else:
-                            st.error("❌ Invalid username or password. Please check your credentials and try again.")
+                            st.error("Invalid username or password. Please check your credentials and try again.")
     
     # Information panels
     st.markdown("---")
@@ -110,56 +102,27 @@ def show_login_page() -> bool:
     col_info1, col_info2 = st.columns(2)
     
     with col_info1:
-        st.subheader("Study Information")
+        st.subheader("Platform Information")
         st.markdown("""
-        **Research Focus:**  
-        Investigating the effectiveness of AI-generated personalized learning explanations for {config.course.subject_area.lower()} education.
-        
-        **Your Role:**  
+        **Usage Instructions:**  
         - Complete all platform components in sequence
-        - Provide honest responses to all questions  
-        - Engage with the learning materials naturally
-        
-        **Duration:** Approximately 60 minutes
+        - Follow the navigation steps provided
+        - Use the menu on the left to navigate
         """)
     
     with col_info2:
-        st.subheader("🔒 Privacy & Security")
+        st.subheader("Privacy & Security")
         st.markdown("""
         **Data Protection:**  
-        - All responses are pseudonymized
-        - Data used only for academic research
-        - GDPR compliant data handling
+        - Secure data handling
+        - Privacy-compliant processing
         
         **Session Security:**  
-        - Automatic logout after session completion
-        - Secure credential verification
-        - Encrypted data transmission
+        - Secure login verification
+        - Automatic session management
         """)
     
-    # Development information (only show for development)
-    if st.secrets.get("environment", "production") == "development":
-        st.markdown("---")
-        with st.expander("🔧 Development Information", expanded=False):
-            st.subheader("Available Credentials (Development Mode)")
-            
-            credentials_info = auth_manager.get_available_usernames()
-            
-            # Organize by type
-            participant_creds = [(k, v) for k, v in credentials_info.items() if k.startswith(('personalised_', 'generic_'))]
-            dev_creds = [(k, v) for k, v in credentials_info.items() if k.startswith(('dev_', 'fast_', 'admin_'))]
-            
-            col_dev1, col_dev2 = st.columns(2)
-            
-            with col_dev1:
-                st.markdown("**Study Participant Credentials:**")
-                for username, description in participant_creds:
-                    st.code(f"{username} - {description}")
-            
-            with col_dev2:
-                st.markdown("**Research Team Credentials:**")
-                for username, description in dev_creds:
-                    st.code(f"{username} - {description}")
+
     
     # Footer
     st.markdown("---")
@@ -167,8 +130,7 @@ def show_login_page() -> bool:
         """
         <div style='text-align: center; color: #666;'>
         <small>
-        {config.platform.platform_name} | {config.platform.study_organization} Research Study {config.platform.study_year}<br>
-        For technical support, contact the research team
+        Learning Platform | 2025
         </small>
         </div>
         """,
@@ -185,16 +147,16 @@ def show_logout_interface() -> None:
     
     if config:
         st.sidebar.markdown("---")
-        st.sidebar.subheader("👤 Session Info")
+        st.sidebar.subheader("Session Info")
         st.sidebar.info(f"**User:** {config.description}")
         st.sidebar.info(f"**Mode:** {config.study_condition.title()}")
         
         if config.dev_mode:
-            st.sidebar.warning("🔧 Development Mode Active")
+            st.sidebar.warning("Development Mode Active")
         if config.fast_test_mode:
-            st.sidebar.info("⚡ Fast Test Mode Active")
+            st.sidebar.info("Fast Test Mode Active")
         
-        if st.sidebar.button("🚪 Logout", type="secondary"):
+        if st.sidebar.button("Logout", type="secondary"):
             auth_manager.logout()
             st.rerun()
 
