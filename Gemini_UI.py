@@ -51,9 +51,6 @@ for p in (
 # Streamlit page‑level setup
 # ──────────────────────────────────────────────────────────────────────────
 FAST_TEST_MODE: bool = st.session_state.get("fast_test_mode", False)
-if st.sidebar.button("Enable Fast Test Mode (Dev Only)"):
-    st.session_state["fast_test_mode"] = True
-    st.rerun()
 
 st.markdown(
     """

@@ -146,15 +146,17 @@ def show_logout_interface() -> None:
     config = auth_manager.get_current_config()
     
     if config:
-        st.sidebar.markdown("---")
-        st.sidebar.subheader("Session Info")
-        st.sidebar.info(f"**User:** {config.description}")
-        st.sidebar.info(f"**Mode:** {config.study_condition.title()}")
-        
-        if config.dev_mode:
-            st.sidebar.warning("Development Mode Active")
-        if config.fast_test_mode:
-            st.sidebar.info("Fast Test Mode Active")
+        # Only show session info for non-participant users
+        if config.username not in ["Participant1", "Participant2"]:
+            st.sidebar.markdown("---")
+            st.sidebar.subheader("Session Info")
+            st.sidebar.info(f"**User:** {config.description}")
+            st.sidebar.info(f"**Mode:** {config.study_condition.title()}")
+            
+            if config.dev_mode:
+                st.sidebar.warning("Development Mode Active")
+            if config.fast_test_mode:
+                st.sidebar.info("Fast Test Mode Active")
         
         if st.sidebar.button("Logout", type="secondary"):
             auth_manager.logout()

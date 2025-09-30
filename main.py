@@ -322,8 +322,6 @@ Thank you for helping us improve adaptive learning experiences!
 
     # — dev helper ---------------------------------------------------------
     if DEV_MODE:
-        st.button("Enable Fast Test Mode (Dev Only)")
-        st.session_state["fast_test_mode"] = True
         # minimal stubs used by Gemini_UI
         st.session_state.exported_images = [
             Path("uploads/ppt/picture/Slide_4 of Lecture8.png")
