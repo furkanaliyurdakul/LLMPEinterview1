@@ -944,7 +944,7 @@ elif st.session_state.current_page == "completion":
     st.title("Interview Complete!")
     
     st.markdown(f"""
-    ## {config.ui_text.completion_thank_you}
+    ## {config.ui_text.completion_thanks}
     
     You have successfully completed all components of the {config.course.course_title} learning interview:
     
