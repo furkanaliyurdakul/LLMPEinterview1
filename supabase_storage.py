@@ -31,30 +31,71 @@ class SupabaseStorage:
             )
             self.bucket_name = "interview-results"
             self.connected = True
+            
+            # Initialize bucket on startup
+            self.ensure_bucket_exists()
+            
         except Exception as e:
             st.error(f"Failed to connect to Supabase: {e}")
             self.connected = False
     
-    def test_connection(self) -> bool:
-        """Test Supabase connection and bucket access."""
+    def ensure_bucket_exists(self) -> bool:
+        """Ensure the required bucket exists, create if missing."""
         if not self.connected:
             return False
             
         try:
-            logger.info("Testing Supabase connection...")
-            print("🔌 UPLOAD DEBUG: Testing Supabase connection...")
+            logger.info("Checking if Supabase bucket exists...")
+            print(f"🔍 SUPABASE INIT: Checking bucket '{self.bucket_name}'...")
             
             # Test bucket access
             bucket_list = self.supabase.storage.list_buckets()
+            existing_buckets = [bucket.name for bucket in bucket_list]
+            logger.info(f"Available buckets: {existing_buckets}")
+            print(f"📁 SUPABASE INIT: Available buckets: {existing_buckets}")
+            
             bucket_exists = any(bucket.name == self.bucket_name for bucket in bucket_list)
             
-            if not bucket_exists:
-                error_msg = f"Bucket '{self.bucket_name}' not found"
+            if bucket_exists:
+                logger.info(f"Bucket '{self.bucket_name}' already exists")
+                print(f"✅ SUPABASE INIT: Bucket '{self.bucket_name}' ready")
+                return True
+            
+            # Create the bucket
+            logger.info(f"Creating bucket '{self.bucket_name}'...")
+            print(f"🔨 SUPABASE INIT: Creating bucket '{self.bucket_name}'...")
+            
+            create_result = self.supabase.storage.create_bucket(
+                id=self.bucket_name,
+                name=self.bucket_name,
+                options={"public": False}  # Private bucket for interview data
+            )
+            
+            if hasattr(create_result, 'error') and create_result.error:
+                error_msg = f"Failed to create bucket: {create_result.error}"
                 logger.error(error_msg)
-                print(f"❌ UPLOAD DEBUG: {error_msg}")
-                st.error(error_msg)
+                print(f"❌ SUPABASE INIT: {error_msg}")
                 return False
+            else:
+                logger.info(f"Successfully created bucket '{self.bucket_name}'")
+                print(f"✅ SUPABASE INIT: Successfully created bucket '{self.bucket_name}'")
+                return True
                 
+        except Exception as e:
+            error_msg = f"Error ensuring bucket exists: {e}"
+            logger.error(error_msg)
+            print(f"❌ SUPABASE INIT: {error_msg}")
+            return False
+    
+    def test_connection(self) -> bool:
+        """Test Supabase connection and upload capability."""
+        if not self.connected:
+            return False
+            
+        try:
+            logger.info("Testing Supabase upload capability...")
+            print("🔌 UPLOAD TEST: Testing upload capability...")
+            
             # Test upload
             test_path = f"connection_test_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
             test_result = self.supabase.storage.from_(self.bucket_name).upload(
@@ -66,21 +107,49 @@ class SupabaseStorage:
             if hasattr(test_result, 'error') and test_result.error:
                 error_msg = f"Upload test failed: {test_result.error}"
                 logger.error(error_msg)
-                print(f"❌ UPLOAD DEBUG: {error_msg}")
+                print(f"❌ UPLOAD TEST: {error_msg}")
                 st.error(error_msg)
                 return False
                 
             # Clean up test file
             self.supabase.storage.from_(self.bucket_name).remove([test_path])
-            logger.info("Connection test successful")
-            print("✅ UPLOAD DEBUG: Connection test successful")
+            logger.info("Upload test successful")
+            print("✅ UPLOAD TEST: Upload capability confirmed")
             return True
             
         except Exception as e:
-            error_msg = f"Connection test failed: {e}"
+            error_msg = f"Upload test failed: {e}"
             logger.error(error_msg)
-            print(f"❌ UPLOAD DEBUG: {error_msg}")
+            print(f"❌ UPLOAD TEST: {error_msg}")
             st.error(error_msg)
+            return False
+    
+    def manual_test(self):
+        """Manual test function you can call anytime to check Supabase setup."""
+        print("\n" + "="*50)
+        print("🧪 MANUAL SUPABASE TEST")
+        print("="*50)
+        
+        if not self.connected:
+            print("❌ Not connected to Supabase")
+            return False
+        
+        print("✅ Connected to Supabase")
+        
+        # Test bucket
+        if self.ensure_bucket_exists():
+            print("✅ Bucket ready")
+        else:
+            print("❌ Bucket not ready")
+            return False
+        
+        # Test upload
+        if self.test_connection():
+            print("✅ Upload capability confirmed")
+            print("🎉 Supabase is ready for uploads!")
+            return True
+        else:
+            print("❌ Upload test failed")
             return False
     
     def upload_session_files(self, session_manager) -> bool:
@@ -92,12 +161,12 @@ class SupabaseStorage:
             return False
             
         try:
-            # Test connection and bucket access
+            # Quick upload capability test
             logger.info("Starting Supabase upload process...")
             print(f"🔄 UPLOAD DEBUG: Starting Supabase upload process at {datetime.now()}")
             
             if not self.test_connection():
-                error_msg = "Supabase connection test failed - uploads will not work"
+                error_msg = "Supabase upload test failed - uploads will not work"
                 logger.error(error_msg)
                 st.error(error_msg)
                 return False
