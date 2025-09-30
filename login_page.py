@@ -147,7 +147,7 @@ def show_logout_interface() -> None:
     
     if config:
         # Only show session info for non-participant users
-        if config.username not in ["Participant1", "Participant2"]:
+        if config.username not in ["participant1", "participant2"]:
             st.sidebar.markdown("---")
             st.sidebar.subheader("Session Info")
             st.sidebar.info(f"**User:** {config.description}")

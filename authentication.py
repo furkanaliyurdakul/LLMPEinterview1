@@ -44,7 +44,7 @@ class AuthenticationManager:
             # Personalised cohort participant
             "personalised": CredentialConfig(
                 username="participant1",
-                password_hash=self._hash_password("participant1"),
+                password_hash=self._hash_password("newpassword1"),
                 study_condition="personalised",
                 description="Personalised Learning Participant",
                 folder_prefix="personalised_cohort",
@@ -56,7 +56,7 @@ class AuthenticationManager:
             # Generic cohort participant  
             "generic": CredentialConfig(
                 username="participant2",
-                password_hash=self._hash_password("participant2"),
+                password_hash=self._hash_password("newpassword2"),
                 study_condition="generic",
                 description="Generic Learning Participant",
                 folder_prefix="generic_cohort",
@@ -104,14 +104,12 @@ class AuthenticationManager:
     
     def authenticate(self, username: str, password: str) -> Optional[CredentialConfig]:
         """Authenticate user and return credential config if valid."""
-        if username not in self.credentials:
-            return None
-        
-        credential = self.credentials[username]
-        password_hash = self._hash_password(password)
-        
-        if password_hash == credential.password_hash:
-            return credential
+        # Find credential by matching username field
+        for credential in self.credentials.values():
+            if credential.username == username:
+                password_hash = self._hash_password(password)
+                if password_hash == credential.password_hash:
+                    return credential
         return None
     
     def is_authenticated(self) -> bool:

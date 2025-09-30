@@ -121,29 +121,35 @@ API_KEY: str = st.secrets["google"]["api_key"]
 # Yiman = AIzaSyCdNS08cjO_lvj35Ytvs8szbUmeAdo4aIA
 # Furkan Ali = AIzaSyArkmZSrZaeWQSfL9CFkQ0jXaEe4D9sMEQ
 
-# --- tutor‑related objects that Gemini_UI expects -----------------
-DEFAULTS = {
-    "exported_images": [],  # list[Path] – exported PPT slides
-    "transcription_text": "",  # Whisper output
-    "selected_slide": "Slide 1",
-    "profile_text": "",  # long plain‑text profile
-    "profile_dict": {},  # parsed dict version
-    "debug_logs": [],  # collected via Gemini_UI.debug_log(...)
-    "messages": []
-}
+# Initialize session state efficiently (once per session)
+if "session_initialized" not in st.session_state:
+    # --- tutor‑related objects that Gemini_UI expects -----------------
+    DEFAULTS = {
+        "exported_images": [],  # list[Path] – exported PPT slides
+        "transcription_text": "",  # Whisper output
+        "selected_slide": "Slide 1",
+        "profile_text": "",  # long plain‑text profile
+        "profile_dict": {},  # parsed dict version
+        "debug_logs": [],  # collected via Gemini_UI.debug_log(...)
+        "messages": [],
+        "transcription_loaded": False,
+        "slides_loaded": False
+    }
 
-for k, v in DEFAULTS.items():
-    st.session_state.setdefault(k, v)
+    for k, v in DEFAULTS.items():
+        st.session_state.setdefault(k, v)
 
-# Navigation & completion flags
-for key in (
-    "current_page",
-    "profile_completed",
-    "learning_completed",
-    "test_completed",
-    "ueq_completed",
-):
-    st.session_state.setdefault(key, False if key != "current_page" else "home")
+    # Navigation & completion flags
+    for key in (
+        "current_page",
+        "profile_completed",
+        "learning_completed",
+        "test_completed",
+        "ueq_completed",
+    ):
+        st.session_state.setdefault(key, False if key != "current_page" else "home")
+    
+    st.session_state["session_initialized"] = True
 
 # ───────────────────────────────────────────────────────────────
 # Helper functions
@@ -464,14 +470,16 @@ elif st.session_state.current_page == "personalized_learning":
             # http_options={"api_version": "v1alpha"}  # optional if you need early features
         )
 
-        # … after starting the chat object …
+        # Initialize Gemini chat only once per session
         if "gemini_chat" not in st.session_state:
-            #model = genai.GenerativeModel("gemini-2.0-flash-thinking-exp-01-21")
-            #st.session_state.gemini_chat = model.start_chat(history=[])
             st.session_state.gemini_chat = client.chats.create(
                 model="gemini-2.5-flash",
                 history=[]
             )
+            st.session_state.gemini_chat_initialized = False
+
+        # Send base context only once per session  
+        if not st.session_state.get("gemini_chat_initialized", False):
             PERSONALISED = st.session_state.get("use_personalisation", True)
 
             base_ctx = make_base_context(
@@ -480,6 +488,7 @@ elif st.session_state.current_page == "personalized_learning":
             )
 
             st.session_state.gemini_chat.send_message(json.dumps(base_ctx))
+            st.session_state.gemini_chat_initialized = True
 
             get_learning_logger().log_interaction(
                 interaction_type="prime_context",
@@ -548,25 +557,25 @@ elif st.session_state.current_page == "personalized_learning":
             st.sidebar.header("Course Content")
             st.sidebar.info(f"**{config.course.course_title}**\n\nUsing pre-loaded course materials:\n- {config.course.total_slides} lecture slides\n- Complete audio transcription")
             
-            # Load pre-transcribed course content
-            if not st.session_state.transcription_text:
+            # Load pre-transcribed course content (cached)
+            if not st.session_state.get("transcription_text"):
                 transcription_file = TRANSCRIPTION_DIR / config.course.transcription_filename
                 if transcription_file.exists():
                     try:
                         st.session_state.transcription_text = transcription_file.read_text(encoding="utf-8")
+                        st.session_state.transcription_loaded = True
                         st.sidebar.success(f"✅ Transcription loaded ({len(st.session_state.transcription_text):,} chars)")
-                        debug_log(f"Loaded {config.course.course_title} transcription from {transcription_file.name}")
                     except Exception as e:
                         st.sidebar.error(f"❌ Error loading transcription: {e}")
-                        debug_log(f"Error loading transcription: {e}")
+                        st.session_state.transcription_loaded = False
                 else:
                     st.sidebar.error(f"❌ {config.course.course_title} transcription not found")
-                    debug_log(f"Transcription file not found: {transcription_file}")
-            else:
+                    st.session_state.transcription_loaded = False
+            elif st.session_state.get("transcription_loaded", False):
                 st.sidebar.success(f"✅ Transcription loaded ({len(st.session_state.transcription_text):,} chars)")
             
-            # Load pre-processed course slides  
-            if not st.session_state.exported_images:
+            # Load pre-processed course slides (cached)
+            if not st.session_state.get("exported_images"):
                 slides_dir = UPLOAD_DIR_PPT / "fixed" / "picture"
                 if slides_dir.exists():
                     slide_files = list(slides_dir.glob("Slide_*.jpg"))
@@ -579,25 +588,15 @@ elif st.session_state.current_page == "personalized_learning":
                         
                         slide_files = sorted(slide_files, key=extract_slide_number)
                         st.session_state.exported_images = slide_files
+                        st.session_state.slides_loaded = True
                         st.sidebar.success(f"✅ {len(slide_files)} slides loaded")
-                        debug_log(f"Loaded {len(slide_files)} {config.course.course_title} slides from {slides_dir}")
-                        
-                        # Debug: show the first and last few slide names to verify sorting
-                        first_few = [f.name for f in slide_files[:5]]
-                        last_few = [f.name for f in slide_files[-3:]]
-                        debug_log(f"First 5 slides: {first_few}")
-                        debug_log(f"Last 3 slides: {last_few}")
-                        
-                        # Debug: show extracted numbers to verify sorting function
-                        extracted_numbers = [extract_slide_number(f) for f in slide_files[:10]]
-                        debug_log(f"First 10 extracted numbers: {extracted_numbers}")
                     else:
                         st.sidebar.error("❌ No slide images found in slides directory")
-                        debug_log(f"No slide files found in {slides_dir}")
+                        st.session_state.slides_loaded = False
                 else:
                     st.sidebar.error("❌ Slides directory not found")
-                    debug_log(f"Slides directory not found: {slides_dir}")
-            else:
+                    st.session_state.slides_loaded = False
+            elif st.session_state.get("slides_loaded", False):
                 st.sidebar.success(f"✅ {len(st.session_state.exported_images)} slides loaded")
 
 
