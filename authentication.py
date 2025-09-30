@@ -104,43 +104,68 @@ class AuthenticationManager:
     
     def authenticate(self, username: str, password: str) -> Optional[CredentialConfig]:
         """Authenticate user and return credential config if valid."""
-        print(f"🔍 AUTHENTICATION DEBUG:")
-        print(f"  Input Username: '{username}'")
-        print(f"  Input Password: '{password}'")
-        print(f"  Input Password Length: {len(password)}")
-        
-        # Generate hash for input password
-        input_hash = self._hash_password(password)
-        print(f"  Generated Hash: {input_hash}")
-        
-        # Show all available credentials
-        print(f"  Available Credentials:")
-        for key, config in self.credentials.items():
-            print(f"    {key}: username='{config.username}', hash={config.password_hash}")
-        
-        # Find credential by matching username field
-        found_credential = None
-        for credential in self.credentials.values():
-            if credential.username == username:
-                found_credential = credential
-                break
-        
-        if found_credential:
-            print(f"  Found matching username: '{found_credential.username}'")
-            print(f"  Stored Hash:  {found_credential.password_hash}")
-            print(f"  Input Hash:   {input_hash}")
-            print(f"  Hash Match:   {input_hash == found_credential.password_hash}")
+        try:
+            import streamlit as st
+            # Add debug info to Streamlit interface
+            if 'auth_debug' not in st.session_state:
+                st.session_state.auth_debug = []
             
-            password_hash = self._hash_password(password)
-            if password_hash == found_credential.password_hash:
-                print(f"  ✅ AUTHENTICATION SUCCESS")
-                return found_credential
+            debug_info = []
+            debug_info.append(f"🔍 AUTHENTICATION ATTEMPT:")
+            debug_info.append(f"  Username: '{username}'")
+            debug_info.append(f"  Password: '{password}' (length: {len(password)})")
+            
+            # Generate hash for input password
+            input_hash = self._hash_password(password)
+            debug_info.append(f"  Generated Hash: {input_hash}")
+            
+            # Show available credentials
+            debug_info.append(f"  Available Credentials:")
+            for key, config in self.credentials.items():
+                debug_info.append(f"    {key}: '{config.username}' -> {config.password_hash}")
+            
+            # Find credential by matching username field
+            found_credential = None
+            for credential in self.credentials.values():
+                if credential.username == username:
+                    found_credential = credential
+                    break
+            
+            if found_credential:
+                debug_info.append(f"  Found user: '{found_credential.username}'")
+                debug_info.append(f"  Stored Hash:  {found_credential.password_hash}")
+                debug_info.append(f"  Input Hash:   {input_hash}")
+                debug_info.append(f"  Hash Match:   {input_hash == found_credential.password_hash}")
+                
+                password_hash = self._hash_password(password)
+                if password_hash == found_credential.password_hash:
+                    debug_info.append(f"  ✅ SUCCESS")
+                    st.session_state.auth_debug.extend(debug_info)
+                    return found_credential
+                else:
+                    debug_info.append(f"  ❌ FAILED - Hash mismatch")
             else:
-                print(f"  ❌ AUTHENTICATION FAILED - Password hash mismatch")
-        else:
-            print(f"  ❌ AUTHENTICATION FAILED - No user found with username '{username}'")
-        
-        return None
+                debug_info.append(f"  ❌ FAILED - Username '{username}' not found")
+            
+            st.session_state.auth_debug.extend(debug_info)
+            return None
+            
+        except ImportError:
+            # Fallback to print for non-Streamlit environments
+            print(f"🔍 AUTH: {username}/{password} (len:{len(password)})")
+            
+            # Find credential by matching username field
+            for credential in self.credentials.values():
+                if credential.username == username:
+                    password_hash = self._hash_password(password)
+                    if password_hash == credential.password_hash:
+                        print(f"  ✅ SUCCESS")
+                        return credential
+                    else:
+                        print(f"  ❌ HASH MISMATCH")
+                        return None
+            print(f"  ❌ USER NOT FOUND")
+            return None
     
     def is_authenticated(self) -> bool:
         """Check if current session has valid authentication."""

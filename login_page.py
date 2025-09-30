@@ -95,6 +95,15 @@ def show_login_page() -> bool:
                             st.rerun()
                         else:
                             st.error("Invalid username or password. Please check your credentials and try again.")
+                            
+                            # Show debug information if available
+                            if "auth_debug" in st.session_state and st.session_state.auth_debug:
+                                with st.expander("🔍 Debug Information (for development)", expanded=False):
+                                    for debug_line in st.session_state.auth_debug[-20:]:  # Show last 20 lines
+                                        st.code(debug_line, language=None)
+                                    if st.button("Clear Debug Log"):
+                                        st.session_state.auth_debug = []
+                                        st.rerun()
     
     # Information panels
     st.markdown("---")
