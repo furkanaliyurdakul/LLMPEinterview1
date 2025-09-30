@@ -43,8 +43,8 @@ class AuthenticationManager:
         return {
             # Personalised cohort participant
             "personalised": CredentialConfig(
-                username="Participant1",
-                password_hash=self._hash_password("Participant1"),
+                username="participant1",
+                password_hash=self._hash_password("participant1"),
                 study_condition="personalised",
                 description="Personalised Learning Participant",
                 folder_prefix="personalised_cohort",
@@ -55,8 +55,8 @@ class AuthenticationManager:
             
             # Generic cohort participant  
             "generic": CredentialConfig(
-                username="Participant2",
-                password_hash=self._hash_password("Participant2"),
+                username="participant2",
+                password_hash=self._hash_password("participant2"),
                 study_condition="generic",
                 description="Generic Learning Participant",
                 folder_prefix="generic_cohort",
