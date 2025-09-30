@@ -96,14 +96,11 @@ def show_login_page() -> bool:
                         else:
                             st.error("Invalid username or password. Please check your credentials and try again.")
                             
-                            # Show debug information if available
-                            if "auth_debug" in st.session_state and st.session_state.auth_debug:
-                                with st.expander("🔍 Debug Information (for development)", expanded=False):
-                                    for debug_line in st.session_state.auth_debug[-20:]:  # Show last 20 lines
-                                        st.code(debug_line, language=None)
-                                    if st.button("Clear Debug Log"):
-                                        st.session_state.auth_debug = []
-                                        st.rerun()
+                            # Show minimal debug info for developers only
+                            if "auth_log" in st.session_state and st.session_state.auth_log:
+                                with st.expander("Authentication Log", expanded=False):
+                                    for log_entry in st.session_state.auth_log[-5:]:  # Show last 5 entries
+                                        st.text(log_entry)
     
     # Information panels
     st.markdown("---")

@@ -104,68 +104,31 @@ class AuthenticationManager:
     
     def authenticate(self, username: str, password: str) -> Optional[CredentialConfig]:
         """Authenticate user and return credential config if valid."""
+        # Find credential by matching username field
+        for credential in self.credentials.values():
+            if credential.username == username:
+                password_hash = self._hash_password(password)
+                if password_hash == credential.password_hash:
+                    # Optional: Log successful authentication for monitoring
+                    try:
+                        import streamlit as st
+                        if 'auth_log' not in st.session_state:
+                            st.session_state.auth_log = []
+                        st.session_state.auth_log.append(f"✅ {username} authenticated successfully")
+                    except ImportError:
+                        pass
+                    return credential
+        
+        # Optional: Log failed authentication attempts for debugging
         try:
             import streamlit as st
-            # Add debug info to Streamlit interface
-            if 'auth_debug' not in st.session_state:
-                st.session_state.auth_debug = []
-            
-            debug_info = []
-            debug_info.append(f"🔍 AUTHENTICATION ATTEMPT:")
-            debug_info.append(f"  Username: '{username}'")
-            debug_info.append(f"  Password: '{password}' (length: {len(password)})")
-            
-            # Generate hash for input password
-            input_hash = self._hash_password(password)
-            debug_info.append(f"  Generated Hash: {input_hash}")
-            
-            # Show available credentials
-            debug_info.append(f"  Available Credentials:")
-            for key, config in self.credentials.items():
-                debug_info.append(f"    {key}: '{config.username}' -> {config.password_hash}")
-            
-            # Find credential by matching username field
-            found_credential = None
-            for credential in self.credentials.values():
-                if credential.username == username:
-                    found_credential = credential
-                    break
-            
-            if found_credential:
-                debug_info.append(f"  Found user: '{found_credential.username}'")
-                debug_info.append(f"  Stored Hash:  {found_credential.password_hash}")
-                debug_info.append(f"  Input Hash:   {input_hash}")
-                debug_info.append(f"  Hash Match:   {input_hash == found_credential.password_hash}")
-                
-                password_hash = self._hash_password(password)
-                if password_hash == found_credential.password_hash:
-                    debug_info.append(f"  ✅ SUCCESS")
-                    st.session_state.auth_debug.extend(debug_info)
-                    return found_credential
-                else:
-                    debug_info.append(f"  ❌ FAILED - Hash mismatch")
-            else:
-                debug_info.append(f"  ❌ FAILED - Username '{username}' not found")
-            
-            st.session_state.auth_debug.extend(debug_info)
-            return None
-            
+            if 'auth_log' not in st.session_state:
+                st.session_state.auth_log = []
+            st.session_state.auth_log.append(f"❌ Failed login attempt: {username}")
         except ImportError:
-            # Fallback to print for non-Streamlit environments
-            print(f"🔍 AUTH: {username}/{password} (len:{len(password)})")
+            pass
             
-            # Find credential by matching username field
-            for credential in self.credentials.values():
-                if credential.username == username:
-                    password_hash = self._hash_password(password)
-                    if password_hash == credential.password_hash:
-                        print(f"  ✅ SUCCESS")
-                        return credential
-                    else:
-                        print(f"  ❌ HASH MISMATCH")
-                        return None
-            print(f"  ❌ USER NOT FOUND")
-            return None
+        return None
     
     def is_authenticated(self) -> bool:
         """Check if current session has valid authentication."""
@@ -194,12 +157,21 @@ class AuthenticationManager:
             "profile_dict", "exported_images", "transcription_text",
             "selected_slide", "debug_logs", "condition_chosen",
             "use_personalisation", "consent_given", "consent_logged",
-            "show_review", "gemini_chat", "_page_timer"
+            "show_review", "gemini_chat", "_page_timer", "session_initialized",
+            "transcription_loaded", "slides_loaded", "gemini_chat_initialized"
         ]
         
         for key in session_keys_to_clear:
             if key in st.session_state:
                 del st.session_state[key]
+        
+        # Re-initialize essential session state variables with default values
+        # This prevents KeyError when accessing these variables after logout
+        st.session_state["current_page"] = "home"
+        st.session_state["profile_completed"] = False
+        st.session_state["learning_completed"] = False
+        st.session_state["test_completed"] = False
+        st.session_state["ueq_completed"] = False
     
     def get_study_condition_override(self) -> Optional[bool]:
         """Get study condition override for special modes.

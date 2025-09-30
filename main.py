@@ -24,6 +24,38 @@ import streamlit as st
 from login_page import require_authentication
 credential_config = require_authentication()
 
+# ── Initialize Session State (IMMEDIATELY AFTER AUTH) ─────────
+def ensure_session_state_initialized():
+    """Ensure all required session state variables are initialized with defaults."""
+    # --- tutor‑related objects that Gemini_UI expects -----------------
+    DEFAULTS = {
+        "exported_images": [],  # list[Path] – exported PPT slides
+        "transcription_text": "",  # Whisper output
+        "selected_slide": "Slide 1",
+        "profile_text": "",  # long plain‑text profile
+        "profile_dict": {},  # parsed dict version
+        "debug_logs": [],  # collected via Gemini_UI.debug_log(...)
+        "messages": [],
+        "transcription_loaded": False,
+        "slides_loaded": False
+    }
+
+    for k, v in DEFAULTS.items():
+        st.session_state.setdefault(k, v)
+
+    # Navigation & completion flags
+    for key in (
+        "current_page",
+        "profile_completed",
+        "learning_completed",
+        "test_completed",
+        "ueq_completed",
+    ):
+        st.session_state.setdefault(key, False if key != "current_page" else "home")
+
+# Always ensure session state is properly initialized
+ensure_session_state_initialized()
+
 # ── Configuration ──────────────────────────────────────────────
 from config import get_config, get_course_title, get_platform_name, get_ui_text
 config = get_config()
@@ -121,36 +153,6 @@ API_KEY: str = st.secrets["google"]["api_key"]
 # Yiman = AIzaSyCdNS08cjO_lvj35Ytvs8szbUmeAdo4aIA
 # Furkan Ali = AIzaSyArkmZSrZaeWQSfL9CFkQ0jXaEe4D9sMEQ
 
-# Initialize session state efficiently (once per session)
-if "session_initialized" not in st.session_state:
-    # --- tutor‑related objects that Gemini_UI expects -----------------
-    DEFAULTS = {
-        "exported_images": [],  # list[Path] – exported PPT slides
-        "transcription_text": "",  # Whisper output
-        "selected_slide": "Slide 1",
-        "profile_text": "",  # long plain‑text profile
-        "profile_dict": {},  # parsed dict version
-        "debug_logs": [],  # collected via Gemini_UI.debug_log(...)
-        "messages": [],
-        "transcription_loaded": False,
-        "slides_loaded": False
-    }
-
-    for k, v in DEFAULTS.items():
-        st.session_state.setdefault(k, v)
-
-    # Navigation & completion flags
-    for key in (
-        "current_page",
-        "profile_completed",
-        "learning_completed",
-        "test_completed",
-        "ueq_completed",
-    ):
-        st.session_state.setdefault(key, False if key != "current_page" else "home")
-    
-    st.session_state["session_initialized"] = True
-
 # ───────────────────────────────────────────────────────────────
 # Helper functions
 # ───────────────────────────────────────────────────────────────
@@ -211,10 +213,10 @@ def navigate_to(page: str) -> None:
 st.sidebar.title("Navigation")
 nav_items = [
     ("Home", "home", True),
-    (config.ui_text.nav_profile, "profile_survey", st.session_state.profile_completed),
-    (f"{LABEL}", "personalized_learning", st.session_state.learning_completed),
-    (config.ui_text.nav_knowledge, "knowledge_test", st.session_state.test_completed),
-    (config.ui_text.nav_ueq, "ueq_survey", st.session_state.ueq_completed),
+    (config.ui_text.nav_profile, "profile_survey", st.session_state.get("profile_completed", False)),
+    (f"{LABEL}", "personalized_learning", st.session_state.get("learning_completed", False)),
+    (config.ui_text.nav_knowledge, "knowledge_test", st.session_state.get("test_completed", False)),
+    (config.ui_text.nav_ueq, "ueq_survey", st.session_state.get("ueq_completed", False)),
 ]
 
 for title, target, done in nav_items:
