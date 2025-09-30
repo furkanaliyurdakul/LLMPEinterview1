@@ -29,6 +29,7 @@ env/
 
 # Credentials and sensitive files
 credentials.md
+CREDENTIALS.md
 
 # Logs
 *.log
