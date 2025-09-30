@@ -23,10 +23,12 @@ import streamlit as st
 # ── Authentication Check (MUST BE FIRST) ──────────────────────
 from login_page import require_authentication
 credential_config = require_authentication()
+print("🔧 DEBUG: Authentication completed")
 
 # ── Initialize Session State (IMMEDIATELY AFTER AUTH) ─────────
 def ensure_session_state_initialized():
     """Ensure all required session state variables are initialized with defaults."""
+    print("🔧 DEBUG: Starting session state initialization")
     # --- tutor‑related objects that Gemini_UI expects -----------------
     DEFAULTS = {
         "exported_images": [],  # list[Path] – exported PPT slides
@@ -52,13 +54,16 @@ def ensure_session_state_initialized():
         "ueq_completed",
     ):
         st.session_state.setdefault(key, False if key != "current_page" else "home")
+    print("🔧 DEBUG: Session state initialization completed")
 
 # Always ensure session state is properly initialized
 ensure_session_state_initialized()
+print("🔧 DEBUG: About to start imports")
 
 # ── Configuration ──────────────────────────────────────────────
 from config import get_config, get_course_title, get_platform_name, get_ui_text
 config = get_config()
+print("🔧 DEBUG: Config loaded")
 
 LABEL: str = config.platform.learning_section_name
 st.set_page_config(page_title=f"{get_platform_name()}", layout="wide")
@@ -330,6 +335,7 @@ Thank you for helping us improve adaptive learning experiences!
 
     # — dev helper ---------------------------------------------------------
     if DEV_MODE:
+        print("🔧 DEBUG: Setting up dev mode stubs")
         # minimal stubs used by Gemini_UI
         st.session_state.exported_images = [
             Path("uploads/ppt/picture/Slide_4 of Lecture8.png")
@@ -338,6 +344,7 @@ Thank you for helping us improve adaptive learning experiences!
             "This is a mock transcription for fast testing."
         )
         sample_path = Path(__file__).parent / "uploads" / "profile" / "Test_User_profile.txt" 
+        print("🔧 DEBUG: Dev mode stubs setup completed")
         profile_txt = sample_path.read_text(encoding="utf-8")
 
         st.session_state.profile_text  = profile_txt
@@ -473,24 +480,30 @@ elif st.session_state.current_page == "personalized_learning":
         )
 
         # Initialize Gemini chat only once per session
+        print("🔧 DEBUG: About to check gemini_chat initialization")
         if "gemini_chat" not in st.session_state:
+            print("🔧 DEBUG: Creating new Gemini chat session")
             st.session_state.gemini_chat = client.chats.create(
                 model="gemini-2.5-flash",
                 history=[]
             )
             st.session_state.gemini_chat_initialized = False
+            print("🔧 DEBUG: Gemini chat session created")
 
         # Send base context only once per session  
         if not st.session_state.get("gemini_chat_initialized", False):
+            print("🔧 DEBUG: About to send base context to Gemini")
             PERSONALISED = st.session_state.get("use_personalisation", True)
 
             base_ctx = make_base_context(
                 st.session_state.profile_dict if PERSONALISED else None,
                 personalised=PERSONALISED
             )
+            print("🔧 DEBUG: Base context created, sending to Gemini...")
 
             st.session_state.gemini_chat.send_message(json.dumps(base_ctx))
             st.session_state.gemini_chat_initialized = True
+            print("🔧 DEBUG: Base context sent successfully")
 
             get_learning_logger().log_interaction(
                 interaction_type="prime_context",
@@ -515,18 +528,32 @@ elif st.session_state.current_page == "personalized_learning":
         
 
         if DEV_MODE:
-            # Live interaction tracking for development
-            interaction_counts = get_learning_logger().get_interaction_counts()
-            st.sidebar.info(
-                f"{len(get_learning_logger().log_entries)} interactions buffered"
-            )
-            st.sidebar.metric("Slide Explanations", interaction_counts["slide_explanations"])
-            st.sidebar.metric("Manual Chat", interaction_counts["manual_chat"]) 
-            st.sidebar.metric("Total User Interactions", interaction_counts["total_user_interactions"])
+            print("🔧 DEBUG: Starting dev mode interaction tracking")
+            # Live interaction tracking for development - TEMPORARILY DISABLED FOR DEBUGGING
+            try:
+                print("🔧 DEBUG: About to call get_interaction_counts()")
+                # TEMPORARILY COMMENTED OUT TO TEST IF THIS IS THE HANG POINT
+                # interaction_counts = get_learning_logger().get_interaction_counts()
+                interaction_counts = {"slide_explanations": 0, "manual_chat": 0, "total_user_interactions": 0}
+                print("🔧 DEBUG: get_interaction_counts() completed successfully (using mock data)")
+                
+                st.sidebar.info(
+                    f"{len(get_learning_logger().log_entries) if hasattr(get_learning_logger(), 'log_entries') else 0} interactions buffered"
+                )
+                st.sidebar.metric("Slide Explanations", interaction_counts["slide_explanations"])
+                st.sidebar.metric("Manual Chat", interaction_counts["manual_chat"]) 
+                st.sidebar.metric("Total User Interactions", interaction_counts["total_user_interactions"])
+                print("🔧 DEBUG: Dev mode metrics displayed successfully")
+            except Exception as e:
+                print(f"🔧 DEBUG: Error in dev mode interaction tracking: {e}")
+                st.sidebar.error(f"Error loading interaction metrics: {e}")
+            
+            print("🔧 DEBUG: Starting dev mode file upload section")
             # Sidebar: Input Files
             st.sidebar.header("Input Files")
             audio_up = st.sidebar.file_uploader("Upload Audio File", ["wav", "mp3", "ogg", "flac", "m4a", "mp4"])
             ppt_up   = st.sidebar.file_uploader("Upload PPT", ["ppt", "pptx"])
+            print("🔧 DEBUG: Dev mode file upload section completed")
             #st.sidebar.success("✅ Profile loaded from survey responses")
             # Debug toggles ---------------------------------------------------
             if st.checkbox("Show Debug Logs"):
@@ -556,24 +583,31 @@ elif st.session_state.current_page == "personalized_learning":
                 )
         else:
             # Production mode: Use pre-processed course content
+            print("🔧 DEBUG: Starting production mode file loading")
             st.sidebar.header("Course Content")
             st.sidebar.info(f"**{config.course.course_title}**\n\nUsing pre-loaded course materials:\n- {config.course.total_slides} lecture slides\n- Complete audio transcription")
             
             # Load pre-transcribed course content (cached)
+            print("🔧 DEBUG: About to check transcription loading")
             if not st.session_state.get("transcription_text"):
+                print("🔧 DEBUG: Loading transcription file")
                 transcription_file = TRANSCRIPTION_DIR / config.course.transcription_filename
                 if transcription_file.exists():
                     try:
                         st.session_state.transcription_text = transcription_file.read_text(encoding="utf-8")
                         st.session_state.transcription_loaded = True
                         st.sidebar.success(f"✅ Transcription loaded ({len(st.session_state.transcription_text):,} chars)")
+                        print("🔧 DEBUG: Transcription loaded successfully")
                     except Exception as e:
+                        print(f"🔧 DEBUG: Error loading transcription: {e}")
                         st.sidebar.error(f"❌ Error loading transcription: {e}")
                         st.session_state.transcription_loaded = False
                 else:
+                    print("🔧 DEBUG: Transcription file not found")
                     st.sidebar.error(f"❌ {config.course.course_title} transcription not found")
                     st.session_state.transcription_loaded = False
             elif st.session_state.get("transcription_loaded", False):
+                print("🔧 DEBUG: Transcription already loaded")
                 st.sidebar.success(f"✅ Transcription loaded ({len(st.session_state.transcription_text):,} chars)")
             
             # Load pre-processed course slides (cached)
