@@ -334,9 +334,9 @@ Thank you for helping us improve adaptive learning experiences!
 #            st.rerun()
 
 
-    # — dev helper ---------------------------------------------------------
-    if (DEV_MODE or FAST_TEST_MODE) and not st.session_state.get("dev_setup_completed", False):
-        print(f"🔧 DEBUG: Setting up {'dev mode' if DEV_MODE else 'fast test mode'} stubs")
+    # — fast test helper (mock data preloading) --------------------------------
+    if FAST_TEST_MODE and not st.session_state.get("fast_test_setup_completed", False):
+        print(f"🔧 DEBUG: Setting up fast test mode stubs")
         # minimal stubs used by Gemini_UI
         st.session_state.exported_images = [
             Path("uploads/ppt/picture/Slide_4 of Lecture8.png")
@@ -345,14 +345,14 @@ Thank you for helping us improve adaptive learning experiences!
             "This is a mock transcription for fast testing."
         )
         sample_path = Path(__file__).parent / "uploads" / "profile" / "Test_User_profile.txt" 
-        print("🔧 DEBUG: Dev mode stubs setup completed")
+        print("🔧 DEBUG: Fast test mode stubs setup completed")
         profile_txt = sample_path.read_text(encoding="utf-8")
 
         st.session_state.profile_text  = profile_txt
         st.session_state.profile_dict  = parse_detailed_student_profile(profile_txt)
 
         st.session_state.selected_slide = "Slide 1"
-        st.session_state["dev_setup_completed"] = True
+        st.session_state["fast_test_setup_completed"] = True
         st.rerun()
 
     if st.button(
@@ -378,8 +378,8 @@ elif st.session_state.current_page == "profile_survey":
 
         # Build a *single* long profile string (if not yet done) --------------
         if not st.session_state.get("profile_text"):
-            # Skip profile building in dev/fast test mode since it's pre-loaded
-            if not (DEV_MODE or FAST_TEST_MODE):
+            # Skip profile building in fast test mode since it's pre-loaded
+            if not FAST_TEST_MODE:
                 # Collect answers from the survey widgets (mirrors the original logic)
                 survey = testui_profilesurvey  # alias
                 name = st.session_state.get("name", "")
@@ -554,13 +554,6 @@ elif st.session_state.current_page == "personalized_learning":
                 print(f"🔧 DEBUG: Error in dev mode interaction tracking: {e}")
                 st.sidebar.error(f"Error loading interaction metrics: {e}")
             
-            print("🔧 DEBUG: Starting dev mode file upload section")
-            # Sidebar: Input Files
-            st.sidebar.header("Input Files")
-            audio_up = st.sidebar.file_uploader("Upload Audio File", ["wav", "mp3", "ogg", "flac", "m4a", "mp4"])
-            ppt_up   = st.sidebar.file_uploader("Upload PPT", ["ppt", "pptx"])
-            print("🔧 DEBUG: Dev mode file upload section completed")
-            #st.sidebar.success("✅ Profile loaded from survey responses")
             # Debug toggles ---------------------------------------------------
             if st.checkbox("Show Debug Logs"):
                 st.subheader("Debug Logs")
@@ -568,6 +561,16 @@ elif st.session_state.current_page == "personalized_learning":
                     st.text(l)
             if st.checkbox("Show Parsed Profile"):
                 st.json(st.session_state.profile_dict)
+
+        # File upload section (controlled by upload_enabled flag) -------------
+        if credential_config.upload_enabled:
+            print("🔧 DEBUG: Starting file upload section (upload_enabled=True)")
+            # Sidebar: Input Files
+            st.sidebar.header("Input Files")
+            audio_up = st.sidebar.file_uploader("Upload Audio File", ["wav", "mp3", "ogg", "flac", "m4a", "mp4"])
+            ppt_up   = st.sidebar.file_uploader("Upload PPT", ["ppt", "pptx"])
+            print("🔧 DEBUG: File upload section completed")
+            
             # Handle audio upload -------------------------------------------
             if audio_up is not None:
                 a_path = UPLOAD_DIR_AUDIO / audio_up.name
@@ -588,8 +591,8 @@ elif st.session_state.current_page == "personalized_learning":
                         f"Exported {len(st.session_state.exported_images)} slides"
                 )
         else:
-            # Production mode: Use pre-processed course content
-            print("🔧 DEBUG: Starting production mode file loading")
+            # No upload access: Use pre-processed course content
+            print("🔧 DEBUG: Starting no-upload mode file loading")
             st.sidebar.header("Course Content")
             st.sidebar.info(f"**{config.course.course_title}**\n\nUsing pre-loaded course materials:\n- {config.course.total_slides} lecture slides\n- Complete audio transcription")
             
