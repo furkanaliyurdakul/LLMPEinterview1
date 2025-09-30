@@ -48,6 +48,7 @@ from Gemini_UI import (
     UPLOAD_DIR_AUDIO,
     UPLOAD_DIR_PPT,
     UPLOAD_DIR_PROFILE,
+    UPLOAD_DIR_VIDEO,
     build_prompt,
     create_summary_prompt,
     make_base_context,
@@ -759,6 +760,20 @@ elif st.session_state.current_page == "personalized_learning":
                 except Exception as e:
                     st.exception(e)
                     st.stop()
+
+            # Video preview functionality
+            video_path = UPLOAD_DIR_VIDEO / "Introduction to Cancer Biology.mp4"
+            if video_path.exists():
+                st.subheader("Lecture Recording")
+                try:
+                    with open(video_path, "rb") as video_file:
+                        video_bytes = video_file.read()
+                    st.video(video_bytes)
+                    st.caption("📹 Introduction to Cancer Biology - Full Lecture")
+                except Exception as e:
+                    st.error(f"Error loading video: {e}")
+            else:
+                st.info("📹 Lecture recording will appear here when available")
 
             if st.session_state.get("profile_text"):
                 st.subheader("Student Profile")

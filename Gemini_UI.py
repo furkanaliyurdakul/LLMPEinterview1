@@ -32,12 +32,14 @@ ROOT: Path = Path.cwd()
 UPLOAD_DIR_AUDIO: Path = ROOT / "uploads" / "audio"
 UPLOAD_DIR_PPT: Path = ROOT / "uploads" / "ppt"
 UPLOAD_DIR_PROFILE: Path = ROOT / "uploads" / "profile"
+UPLOAD_DIR_VIDEO: Path = ROOT / "uploads" / "video"
 TRANSCRIPTION_DIR: Path = ROOT / "transcriptions"
 
 for p in (
     UPLOAD_DIR_AUDIO,
     UPLOAD_DIR_PPT,
     UPLOAD_DIR_PROFILE,
+    UPLOAD_DIR_VIDEO,
     TRANSCRIPTION_DIR,
 ):
     p.mkdir(parents=True, exist_ok=True)
@@ -483,6 +485,20 @@ def main() -> None:
                 caption=selected_slide,
                 use_container_width=True,
             )
+
+        # Video preview functionality
+        video_path = UPLOAD_DIR_VIDEO / "Introduction to Cancer Biology.mp4"
+        if video_path.exists():
+            st.subheader("Lecture Recording")
+            try:
+                with open(video_path, "rb") as video_file:
+                    video_bytes = video_file.read()
+                st.video(video_bytes)
+                st.caption("📹 Introduction to Cancer Biology - Full Lecture")
+            except Exception as e:
+                st.error(f"Error loading video: {e}")
+        else:
+            st.info("📹 Lecture recording will appear here when available")
 
         if "profile_text" in st.session_state:
             st.subheader("Student Profile")
