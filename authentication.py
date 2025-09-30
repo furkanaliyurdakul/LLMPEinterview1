@@ -104,12 +104,42 @@ class AuthenticationManager:
     
     def authenticate(self, username: str, password: str) -> Optional[CredentialConfig]:
         """Authenticate user and return credential config if valid."""
+        print(f"🔍 AUTHENTICATION DEBUG:")
+        print(f"  Input Username: '{username}'")
+        print(f"  Input Password: '{password}'")
+        print(f"  Input Password Length: {len(password)}")
+        
+        # Generate hash for input password
+        input_hash = self._hash_password(password)
+        print(f"  Generated Hash: {input_hash}")
+        
+        # Show all available credentials
+        print(f"  Available Credentials:")
+        for key, config in self.credentials.items():
+            print(f"    {key}: username='{config.username}', hash={config.password_hash}")
+        
         # Find credential by matching username field
+        found_credential = None
         for credential in self.credentials.values():
             if credential.username == username:
-                password_hash = self._hash_password(password)
-                if password_hash == credential.password_hash:
-                    return credential
+                found_credential = credential
+                break
+        
+        if found_credential:
+            print(f"  Found matching username: '{found_credential.username}'")
+            print(f"  Stored Hash:  {found_credential.password_hash}")
+            print(f"  Input Hash:   {input_hash}")
+            print(f"  Hash Match:   {input_hash == found_credential.password_hash}")
+            
+            password_hash = self._hash_password(password)
+            if password_hash == found_credential.password_hash:
+                print(f"  ✅ AUTHENTICATION SUCCESS")
+                return found_credential
+            else:
+                print(f"  ❌ AUTHENTICATION FAILED - Password hash mismatch")
+        else:
+            print(f"  ❌ AUTHENTICATION FAILED - No user found with username '{username}'")
+        
         return None
     
     def is_authenticated(self) -> bool:
