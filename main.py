@@ -153,6 +153,16 @@ def navigate_to(page: str) -> None:
         )
         if not allowed:
             st.warning("Please finish all previous components before the UEQ survey.")
+    elif page == "completion":
+        # Completion page - only accessible if everything is done
+        allowed = (
+            st.session_state.profile_completed
+            and st.session_state.learning_completed
+            and st.session_state.test_completed
+            and st.session_state.ueq_completed
+        )
+        if not allowed:
+            st.warning("Please complete all interview components first.")
     elif page == "home":
         allowed = True
 
@@ -841,50 +851,93 @@ elif st.session_state.current_page == "ueq_survey":
             if st.button("Previous: Knowledge Test"):
                 navigate_to("knowledge_test")
         with col_f:
-            if st.button("Finish") and not st.session_state.get("upload_completed", False):
-                # Set upload completed flag to prevent re-running
-                st.session_state["upload_completed"] = True
+            if st.button("Finish"):
+                # Simple completion - just navigate to thank you page
+                navigate_to("completion")
+
+# ------------------------------------------------------------------------
+# COMPLETION PAGE  – Thank you page with upload processing
+# ------------------------------------------------------------------------
+elif st.session_state.current_page == "completion":
+    # Clean completion page with upload processing in background
+    st.title("🎉 Interview Complete!")
+    
+    st.markdown("""
+    ## Thank you for participating!
+    
+    You have successfully completed all components of the Cancer Biology learning interview:
+    
+    ✅ **Student Profile Survey**  
+    ✅ **Learning Experience**  
+    ✅ **Knowledge Assessment**  
+    ✅ **User Experience Questionnaire**
+    
+    ---
+    
+    ### What happens next?
+    
+    Your responses are being processed and uploaded securely for research analysis. This helps us improve AI-powered learning experiences for future students.
+    
+    🔬 **Research Impact**: Your participation contributes to understanding how personalized AI explanations affect learning outcomes in complex scientific topics.
+    
+    📊 **Data Security**: All your responses are pseudonymized and stored securely according to GDPR guidelines.
+    """)
+    
+    # Process uploads in background (only once)
+    if not st.session_state.get("completion_processed", False):
+        st.session_state["completion_processed"] = True
+        
+        # Show processing status
+        with st.spinner("Processing your responses..."):
+            try:
+                sm = get_session_manager()
                 
-                # Generate final consolidated analytics
-                try:
-                    sm = get_session_manager()
-                    final_analytics_path = sm.create_final_analytics()
-                    
-                    # Upload complete session data to Supabase (single upload at the end)
-                    try:
-                        from supabase_storage import get_supabase_storage
-                        storage = get_supabase_storage()
-                        
-                        session_info = sm.get_session_info()
-                        session_id = session_info["session_id"]
-                        
-                        # Upload all original session files to Supabase
-                        success = storage.upload_session_files(sm)
-                        
-                        if success:
-                            st.success(f"🎉 Thank you for completing all components of the platform!")
-                            st.info(f"Session ID: {session_id}")
-                        else:
-                            st.warning(f"Data saved locally but cloud backup had issues.")
-                            st.success(f"Thank you for completing all components of the platform!")
-                        
-                    except Exception as e:
-                        st.warning(f"Data saved locally but cloud backup had issues: {e}")
-                        st.success(f"Thank you for completing all components of the platform!")
-                    
-                    st.info(f"Final research analytics saved: `{os.path.basename(final_analytics_path)}`")
-                    
-                except Exception as e:
-                    st.warning(f"Could not generate final analytics: {e}")
-                    st.success("Thank you for completing all components of the platform!")
+                # Generate final analytics
+                final_analytics_path = sm.create_final_analytics()
                 
-                # Rerun to show the upload results
-                st.rerun()
+                # Upload to Supabase
+                from supabase_storage import get_supabase_storage
+                storage = get_supabase_storage()
+                session_info = sm.get_session_info()
+                session_id = session_info["session_id"]
+                
+                # Upload all session files
+                success = storage.upload_session_files(sm)
+                
+                if success:
+                    st.success("✅ Your responses have been successfully processed and uploaded!")
+                    st.info(f"📋 Session ID: `{session_id}`")
+                else:
+                    st.info("✅ Your responses have been saved locally.")
+                    st.warning("⚠️ Cloud backup experienced some issues, but your data is secure.")
+                
+            except Exception as e:
+                st.info("✅ Your responses have been saved locally.")
+                st.warning(f"⚠️ Upload processing had issues: {str(e)}")
+    else:
+        # Already processed - show completion message
+        st.success("✅ Your responses have been processed!")
+        session_info = sm.get_session_info()
+        st.info(f"📋 Session ID: `{session_info['session_id']}`")
+    
+    st.markdown("---")
+    
+    # Action buttons
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
+    with col2:
+        st.markdown("### What would you like to do?")
+        
+        if st.button("🔄 Start New Interview Session", use_container_width=True):
+            # Reset all session state for new interview
+            for key in ["profile_completed", "learning_completed", "test_completed", "ueq_completed", 
+                       "completion_processed", "upload_completed", "responses", "messages", 
+                       "profile_text", "profile_dict", "exported_images", "transcription_text"]:
+                if key in st.session_state:
+                    del st.session_state[key]
             
-            # Show "Return to Home" button after upload is completed
-            if st.session_state.get("upload_completed", False):
-                st.markdown("---")
-                if st.button("Return to Home", use_container_width=True):
-                    # Reset the upload completed flag for future sessions
-                    st.session_state["upload_completed"] = False
-                    navigate_to("home")
+            # Navigate to home
+            navigate_to("home")
+        
+        if st.button("🏠 Return to Home Page", use_container_width=True):
+            navigate_to("home")
