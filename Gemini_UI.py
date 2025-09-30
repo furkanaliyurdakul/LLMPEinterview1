@@ -487,7 +487,12 @@ def main() -> None:
             )
 
         # Video preview functionality
-        video_path = UPLOAD_DIR_VIDEO / "Introduction to Cancer Biology.mp4"
+        try:
+            video_path = UPLOAD_DIR_VIDEO / "Introduction to Cancer Biology.mp4"
+        except NameError:
+            # Fallback if UPLOAD_DIR_VIDEO isn't defined
+            video_path = Path.cwd() / "uploads" / "video" / "Introduction to Cancer Biology.mp4"
+        
         if video_path.exists():
             st.subheader("Lecture Recording")
             try:

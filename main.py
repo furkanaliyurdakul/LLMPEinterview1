@@ -48,13 +48,20 @@ from Gemini_UI import (
     UPLOAD_DIR_AUDIO,
     UPLOAD_DIR_PPT,
     UPLOAD_DIR_PROFILE,
-    UPLOAD_DIR_VIDEO,
     build_prompt,
     create_summary_prompt,
     make_base_context,
     debug_log,
     parse_detailed_student_profile,
 )
+
+# Import UPLOAD_DIR_VIDEO with fallback for deployment issues
+try:
+    from Gemini_UI import UPLOAD_DIR_VIDEO
+except ImportError:
+    # Fallback: create video directory if import fails
+    UPLOAD_DIR_VIDEO = Path.cwd() / "uploads" / "video"
+    UPLOAD_DIR_VIDEO.mkdir(parents=True, exist_ok=True)
 from Gemini_UI import export_ppt_slides as process_ppt_file  # alias → keep old name
 from Gemini_UI import (
     parse_detailed_student_profile,
