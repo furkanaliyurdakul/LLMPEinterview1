@@ -64,7 +64,7 @@ class UITextConfig:
     """Configuration for all user-facing text and messages."""
     
     # Welcome and introduction text
-    welcome_title: str = "🎓 {platform_name}"
+    welcome_title: str = "{platform_name}"
     welcome_subtitle: str = "Welcome – what this session is about"
     
     study_description: str = (
@@ -77,7 +77,7 @@ class UITextConfig:
     session_topic_intro: str = "In today's session, it will be about **{course_title}**."
     
     # Navigation and progress text
-    nav_home: str = "🏠 Home"
+    nav_home: str = "Home"
     nav_profile: str = "Student Profile Survey"
     nav_learning: str = "{learning_section_name}"
     nav_knowledge: str = "Knowledge Test"
@@ -89,7 +89,7 @@ class UITextConfig:
     content_loaded_profile: str = "✅ Student profile loaded"
     
     content_info_box: str = (
-        "📚 **{course_title}**\\n\\n"
+        "**{course_title}**\\n\\n"
         "Using pre-loaded course materials:\\n"
         "- {total_slides} lecture slides\\n" 
         "- Complete audio transcription"
@@ -113,7 +113,7 @@ class UITextConfig:
     )
     
     # Completion and progress messages
-    completion_title: str = "🎉 Interview Complete!"
+    completion_title: str = "Interview Complete!"
     completion_description: str = (
         "You have successfully completed all components of the {course_short_name} "
         "learning interview"
@@ -131,8 +131,8 @@ class AuthConfig:
     """Configuration for authentication and security text."""
     
     # Login page text
-    login_title: str = "🔬 {platform_name}"
-    login_subtitle: str = "🔐 Secure Access"
+    login_title: str = "{platform_name}"
+    login_subtitle: str = "Secure Access"
     
     login_description: str = (
         "Welcome to the **{platform_name}** research study.\\n\\n"

@@ -502,11 +502,11 @@ def main() -> None:
                 with open(video_path, "rb") as video_file:
                     video_bytes = video_file.read()
                 st.video(video_bytes)
-                st.caption(f"📹 {config.course.course_title} - Full Lecture")
+                st.caption(f"{config.course.course_title} - Full Lecture")
             except Exception as e:
                 st.error(f"Error loading video: {e}")
         else:
-            st.info("📹 Lecture recording will appear here when available")
+            st.info("Lecture recording will appear here when available")
 
         if "profile_text" in st.session_state:
             st.subheader("Student Profile")

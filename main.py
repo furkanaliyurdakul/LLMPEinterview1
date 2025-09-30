@@ -204,7 +204,7 @@ def navigate_to(page: str) -> None:
 
 st.sidebar.title("Navigation")
 nav_items = [
-    (config.ui_text.nav_home, "home", True),
+    ("Home", "home", True),
     (config.ui_text.nav_profile, "profile_survey", st.session_state.profile_completed),
     (f"{LABEL}", "personalized_learning", st.session_state.learning_completed),
     (config.ui_text.nav_knowledge, "knowledge_test", st.session_state.test_completed),
@@ -225,7 +225,7 @@ if st.session_state.current_page == "home":
     # ------------------------------------------------------------------
     # HOME  ─ study intro
     # ------------------------------------------------------------------
-    st.title(f"🎓 {config.platform.learning_section_name} Platform")
+    st.title(f"{config.platform.learning_section_name} Platform")
     st.markdown(
         f"""
 ### Welcome – what this session is about  
@@ -264,7 +264,7 @@ Thank you for helping us improve adaptive learning experiences!
 """
     )
     # --- GDPR / informed-consent box ---------------------------------
-    with st.expander("ℹ️  Study information & GDPR (click to read)"):
+    with st.expander("Study information & GDPR (click to read)"):
         st.markdown(
             "**Your key rights in 2 lines**  \n"
             "• You may stop at any moment without consequences.  \n"
@@ -275,12 +275,12 @@ Thank you for helping us improve adaptive learning experiences!
         with col_a:
             with open(CONSENT_PDF, "rb") as f:
                 st.download_button(
-                    "📄 Informed-consent form (PDF)", f, file_name=CONSENT_PDF.name
+                    "Informed-consent form (PDF)", f, file_name=CONSENT_PDF.name
                 )
         with col_b:
             with open(INFO_PDF, "rb") as f:
                 st.download_button(
-                    "📄 GDPR information letter (PDF)", f, file_name=INFO_PDF.name
+                    "GDPR information letter (PDF)", f, file_name=INFO_PDF.name
                 )
     # one-line checkbox underneath the expander (outside the `with` block!)
     consent_ok = st.checkbox(
@@ -509,7 +509,7 @@ elif st.session_state.current_page == "personalized_learning":
             # Live interaction tracking for development
             interaction_counts = get_learning_logger().get_interaction_counts()
             st.sidebar.info(
-                f"📝 {len(get_learning_logger().log_entries)} interactions buffered"
+                f"{len(get_learning_logger().log_entries)} interactions buffered"
             )
             st.sidebar.metric("Slide Explanations", interaction_counts["slide_explanations"])
             st.sidebar.metric("Manual Chat", interaction_counts["manual_chat"]) 
@@ -548,7 +548,7 @@ elif st.session_state.current_page == "personalized_learning":
         else:
             # Production mode: Use pre-processed course content
             st.sidebar.header("Course Content")
-            st.sidebar.info(f"📚 **{config.course.course_title}**\n\nUsing pre-loaded course materials:\n- {config.course.total_slides} lecture slides\n- Complete audio transcription")
+            st.sidebar.info(f"**{config.course.course_title}**\n\nUsing pre-loaded course materials:\n- {config.course.total_slides} lecture slides\n- Complete audio transcription")
             
             # Load pre-transcribed course content
             if not st.session_state.transcription_text:
@@ -747,7 +747,7 @@ elif st.session_state.current_page == "personalized_learning":
                 
                 if missing_items:
                     if "student profile" in missing_items and len(missing_items) == 1:
-                        st.info("📝 Complete the Student Profile Survey first to enable explanation generation.")
+                        st.info("Complete the Student Profile Survey first to enable explanation generation.")
                     else:
                         st.info(f"⏳ Loading course content... Missing: {', '.join(missing_items)}")
                 else:
@@ -793,11 +793,11 @@ elif st.session_state.current_page == "personalized_learning":
                     with open(video_path, "rb") as video_file:
                         video_bytes = video_file.read()
                     st.video(video_bytes)
-                    st.caption(f"📹 {config.course.course_title} - Full Lecture")
+                    st.caption(f"{config.course.course_title} - Full Lecture")
                 except Exception as e:
                     st.error(f"Error loading video: {e}")
             else:
-                st.info("📹 Lecture recording will appear here when available")
+                st.info("Lecture recording will appear here when available")
 
             if st.session_state.get("profile_text"):
                 st.subheader("Student Profile")
@@ -899,7 +899,7 @@ elif st.session_state.current_page == "ueq_survey":
 # ------------------------------------------------------------------------
 elif st.session_state.current_page == "completion":
     # Clean completion page with upload processing in background
-    st.title(config.ui_text.completion_title)
+    st.title("Interview Complete!")
     
     st.markdown(f"""
     ## {config.ui_text.completion_thank_you}
@@ -917,9 +917,9 @@ elif st.session_state.current_page == "completion":
     
     Your responses are being processed and uploaded securely for research analysis. This helps us improve AI-powered learning experiences for future students.
     
-    🔬 **Research Impact**: Your participation contributes to understanding how personalized AI explanations affect learning outcomes in complex scientific topics.
+    **Research Impact**: Your participation contributes to understanding how personalized AI explanations affect learning outcomes in complex scientific topics.
     
-    📊 **Data Security**: All your responses are pseudonymized and stored securely according to GDPR guidelines.
+    **Data Security**: All your responses are pseudonymized and stored securely according to GDPR guidelines.
     """)
     
     # Process uploads in background (only once)
@@ -945,7 +945,7 @@ elif st.session_state.current_page == "completion":
                 
                 if success:
                     st.success("✅ Your responses have been successfully processed and uploaded!")
-                    st.info(f"📋 Session ID: `{session_id}`")
+                    st.info(f"Session ID: `{session_id}`")
                 else:
                     st.info("✅ Your responses have been saved locally.")
                     st.warning("⚠️ Cloud backup experienced some issues, but your data is secure.")
@@ -957,7 +957,7 @@ elif st.session_state.current_page == "completion":
         # Already processed - show completion message
         st.success("✅ Your responses have been processed!")
         session_info = sm.get_session_info()
-        st.info(f"📋 Session ID: `{session_info['session_id']}`")
+        st.info(f"Session ID: `{session_info['session_id']}`")
     
     st.markdown("---")
     
@@ -978,5 +978,5 @@ elif st.session_state.current_page == "completion":
             # Navigate to home
             navigate_to("home")
         
-        if st.button("🏠 Return to Home Page", use_container_width=True):
+        if st.button("Return to Home Page", use_container_width=True):
             navigate_to("home")

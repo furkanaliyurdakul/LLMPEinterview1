@@ -4,7 +4,7 @@ import os
 import streamlit as st
 from config import config
 
-st.title(f"🧬 Knowledge Test - {config.course.course_title}")
+st.title(f"Knowledge Test - {config.course.course_title}")
 
 st.markdown(
     f"""

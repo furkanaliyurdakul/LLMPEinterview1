@@ -2,7 +2,7 @@ import streamlit as st
 
 FAST_TEST_MODE = st.session_state.get("fast_test_mode")
 
-st.title("🎓 Student Profile Survey")
+st.title("Student Profile Survey")
 
 # Initialize session state for form submission and to store form values
 if "show_review" not in st.session_state:
@@ -523,7 +523,7 @@ if submit_button:
 if st.session_state.show_review:
     try:
         st.markdown("---")
-        st.header("📄 Review Your Responses")
+        st.header("Review Your Responses")
 
         # Access form data from session state
         if "form_data" not in st.session_state:

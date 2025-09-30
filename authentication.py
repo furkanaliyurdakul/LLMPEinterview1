@@ -35,116 +35,22 @@ class AuthenticationManager:
     
     def _hash_password(self, password: str) -> str:
         """Create secure hash of password with salt."""
-        salt = "cancer_biology_study_2025"  # Study-specific salt
+        salt = "learning_platform_2025"  # Platform-specific salt
         return hashlib.sha256(f"{password}{salt}".encode()).hexdigest()
     
     def _initialize_credentials(self) -> Dict[str, CredentialConfig]:
-        """Initialize all available credentials for the study."""
+        """Initialize available credentials for the platform."""
         return {
-            # Study participant credentials
-            "personalised_p001": CredentialConfig(
-                username="personalised_p001",
-                password_hash=self._hash_password("PersonalisedCohort2025!"),
-                study_condition="personalised",
-                description="Personalised Learning Cohort Participant",
-                folder_prefix="personalised_cohort",
+            # Single credential type - can be shared accordingly
+            "participant": CredentialConfig(
+                username="participant",
+                password_hash=self._hash_password("LearningPlatform2025!"),
+                study_condition="personalised",  # Can be configured as needed
+                description="Platform Participant",
+                folder_prefix="participant_data",
                 dev_mode=False,
                 fast_test_mode=False,
                 upload_enabled=False
-            ),
-            "personalised_p002": CredentialConfig(
-                username="personalised_p002", 
-                password_hash=self._hash_password("PersonalisedCohort2025!"),
-                study_condition="personalised",
-                description="Personalised Learning Cohort Participant",
-                folder_prefix="personalised_cohort",
-                dev_mode=False,
-                fast_test_mode=False,
-                upload_enabled=False
-            ),
-            "personalised_p003": CredentialConfig(
-                username="personalised_p003",
-                password_hash=self._hash_password("PersonalisedCohort2025!"),
-                study_condition="personalised", 
-                description="Personalised Learning Cohort Participant",
-                folder_prefix="personalised_cohort",
-                dev_mode=False,
-                fast_test_mode=False,
-                upload_enabled=False
-            ),
-            "generic_g001": CredentialConfig(
-                username="generic_g001",
-                password_hash=self._hash_password("GenericCohort2025!"),
-                study_condition="generic",
-                description="Generic Learning Cohort Participant", 
-                folder_prefix="generic_cohort",
-                dev_mode=False,
-                fast_test_mode=False,
-                upload_enabled=False
-            ),
-            "generic_g002": CredentialConfig(
-                username="generic_g002",
-                password_hash=self._hash_password("GenericCohort2025!"),
-                study_condition="generic",
-                description="Generic Learning Cohort Participant",
-                folder_prefix="generic_cohort", 
-                dev_mode=False,
-                fast_test_mode=False,
-                upload_enabled=False
-            ),
-            "generic_g003": CredentialConfig(
-                username="generic_g003",
-                password_hash=self._hash_password("GenericCohort2025!"),
-                study_condition="generic",
-                description="Generic Learning Cohort Participant",
-                folder_prefix="generic_cohort",
-                dev_mode=False,
-                fast_test_mode=False,
-                upload_enabled=False
-            ),
-            
-            # Research team credentials  
-            "dev_researcher": CredentialConfig(
-                username="dev_researcher",
-                password_hash=self._hash_password("DevMode2025Research!"),
-                study_condition="personalised",  # Default for dev mode
-                description="Development Mode - Full Access",
-                folder_prefix="dev_testing",
-                dev_mode=True,
-                fast_test_mode=False,
-                upload_enabled=True
-            ),
-            "fast_demo": CredentialConfig(
-                username="fast_demo",
-                password_hash=self._hash_password("FastDemo2025!"),
-                study_condition="personalised",  # Default for demo
-                description="Fast Test Mode - Demo Access", 
-                folder_prefix="demo_testing",
-                dev_mode=False,
-                fast_test_mode=True,
-                upload_enabled=False
-            ),
-            "dev_fast_test": CredentialConfig(
-                username="dev_fast_test",
-                password_hash=self._hash_password("DevFastTest2025!"),
-                study_condition="personalised",  # Default for combined mode
-                description="Development + Fast Test Mode",
-                folder_prefix="dev_fast_testing",
-                dev_mode=True,
-                fast_test_mode=True,
-                upload_enabled=True
-            ),
-            
-            # Special admin credential
-            "admin_furkan": CredentialConfig(
-                username="admin_furkan",
-                password_hash=self._hash_password("AdminAccess2025Furkan!"),
-                study_condition="personalised",  # Default admin setting
-                description="Administrator Access",
-                folder_prefix="admin_testing",
-                dev_mode=True,
-                fast_test_mode=False,
-                upload_enabled=True
             )
         }
     

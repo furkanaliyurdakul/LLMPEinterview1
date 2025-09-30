@@ -23,19 +23,19 @@ def show_login_page() -> bool:
     # Page configuration
     st.set_page_config(
         page_title=f"{config.platform.platform_name} - Login",
-        page_icon="🔬",
+        page_icon="�",
         layout="wide"
     )
     
     # Header
-    st.title(f"🔬 {config.platform.platform_name}")
+    st.title(f"{config.platform.platform_name}")
     st.markdown("---")
     
     # Main login interface
     col1, col2, col3 = st.columns([1, 2, 1])
     
     with col2:
-        st.header("🔐 Secure Access")
+        st.header("Secure Access")
         st.markdown("""
         Welcome to the **{config.platform.platform_name}** research study.
         
@@ -68,7 +68,7 @@ def show_login_page() -> bool:
             )
             
             login_button = st.form_submit_button(
-                "🚀 Access Platform",
+                "Access Platform",
                 use_container_width=True,
                 type="primary"
             )
@@ -110,7 +110,7 @@ def show_login_page() -> bool:
     col_info1, col_info2 = st.columns(2)
     
     with col_info1:
-        st.subheader("📚 Study Information")
+        st.subheader("Study Information")
         st.markdown("""
         **Research Focus:**  
         Investigating the effectiveness of AI-generated personalized learning explanations for {config.course.subject_area.lower()} education.
