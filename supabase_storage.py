@@ -12,6 +12,11 @@ from datetime import datetime
 from supabase import create_client
 from pathlib import Path
 import traceback
+import logging
+
+# Set up logging for upload debugging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class SupabaseStorage:
@@ -36,12 +41,18 @@ class SupabaseStorage:
             return False
             
         try:
+            logger.info("Testing Supabase connection...")
+            print("🔌 UPLOAD DEBUG: Testing Supabase connection...")
+            
             # Test bucket access
             bucket_list = self.supabase.storage.list_buckets()
             bucket_exists = any(bucket.name == self.bucket_name for bucket in bucket_list)
             
             if not bucket_exists:
-                st.error(f"Bucket '{self.bucket_name}' not found")
+                error_msg = f"Bucket '{self.bucket_name}' not found"
+                logger.error(error_msg)
+                print(f"❌ UPLOAD DEBUG: {error_msg}")
+                st.error(error_msg)
                 return False
                 
             # Test upload
@@ -53,42 +64,83 @@ class SupabaseStorage:
             )
             
             if hasattr(test_result, 'error') and test_result.error:
-                st.error(f"Upload test failed: {test_result.error}")
+                error_msg = f"Upload test failed: {test_result.error}"
+                logger.error(error_msg)
+                print(f"❌ UPLOAD DEBUG: {error_msg}")
+                st.error(error_msg)
                 return False
                 
             # Clean up test file
             self.supabase.storage.from_(self.bucket_name).remove([test_path])
+            logger.info("Connection test successful")
+            print("✅ UPLOAD DEBUG: Connection test successful")
             return True
             
         except Exception as e:
-            st.error(f"Connection test failed: {e}")
+            error_msg = f"Connection test failed: {e}"
+            logger.error(error_msg)
+            print(f"❌ UPLOAD DEBUG: {error_msg}")
+            st.error(error_msg)
             return False
     
     def upload_session_files(self, session_manager) -> bool:
         """Upload all local session files to Supabase Storage, maintaining original structure."""
         if not self.connected:
-            st.error("Supabase not connected - cannot save data")
+            error_msg = "Supabase not connected - cannot save data"
+            logger.error(error_msg)
+            st.error(error_msg)
             return False
             
         try:
             # Test connection and bucket access
+            logger.info("Starting Supabase upload process...")
+            print(f"🔄 UPLOAD DEBUG: Starting Supabase upload process at {datetime.now()}")
+            
             if not self.test_connection():
-                st.error("Supabase connection test failed - uploads will not work")
+                error_msg = "Supabase connection test failed - uploads will not work"
+                logger.error(error_msg)
+                st.error(error_msg)
                 return False
                 
             session_info = session_manager.get_session_info()
             session_id = session_info["session_id"]
             session_dir = Path(session_manager.session_dir)
             
+            logger.info(f"Session ID: {session_id}")
+            logger.info(f"Session directory: {session_dir}")
+            print(f"📁 UPLOAD DEBUG: Session ID = {session_id}")
+            print(f"📁 UPLOAD DEBUG: Session directory = {session_dir}")
+            
             if not session_dir.exists():
-                st.error(f"Session directory not found: {session_dir}")
+                error_msg = f"Session directory not found: {session_dir}"
+                logger.error(error_msg)
+                st.error(error_msg)
                 return False
             
             uploaded_files = []
             failed_uploads = []
             debug_info = []
             
+            # Create a detailed upload log file
+            log_file = session_dir / "upload_debug_log.txt"
+            
+            def log_to_file_and_console(message):
+                """Log to both file and console for debugging."""
+                timestamp = datetime.now().strftime("%H:%M:%S")
+                full_message = f"[{timestamp}] {message}"
+                logger.info(message)
+                print(f"📤 UPLOAD DEBUG: {full_message}")
+                with open(log_file, "a", encoding="utf-8") as f:
+                    f.write(full_message + "\n")
+            
+            log_to_file_and_console(f"Starting upload for session {session_id}")
+            log_to_file_and_console(f"Upload log saved to: {log_file}")
+            
             # Walk through all files in the session directory
+            all_files = list(session_dir.rglob("*"))
+            file_count = len([f for f in all_files if f.is_file()])
+            log_to_file_and_console(f"Found {file_count} files to process")
+            
             for file_path in session_dir.rglob("*"):
                 if file_path.is_file():
                     # Calculate relative path from session directory
@@ -102,9 +154,13 @@ class SupabaseStorage:
                     file_size = file_path.stat().st_size
                     debug_info.append(f"{relative_path}: {file_size} bytes")
                     
+                    log_to_file_and_console(f"Processing: {relative_path} ({file_size} bytes)")
+                    
                     # Check file size (Supabase has limits)
                     if file_size > 50 * 1024 * 1024:  # 50MB limit
-                        failed_uploads.append(f"{relative_path}: File too large ({file_size} bytes > 50MB)")
+                        error_msg = f"{relative_path}: File too large ({file_size} bytes > 50MB)"
+                        failed_uploads.append(error_msg)
+                        log_to_file_and_console(f"❌ FAILED: {error_msg}")
                         continue
                     
                     # Read file content
@@ -121,6 +177,8 @@ class SupabaseStorage:
                         
                         # Upload to Supabase
                         try:
+                            log_to_file_and_console(f"Uploading to: {supabase_path}")
+                            
                             # Try upload first
                             result = self.supabase.storage.from_(self.bucket_name).upload(
                                 path=supabase_path,
@@ -130,6 +188,7 @@ class SupabaseStorage:
                             
                             # If upload fails due to file existing, try update instead
                             if hasattr(result, 'error') and result.error and "already exists" in str(result.error):
+                                log_to_file_and_console(f"File exists, trying update: {supabase_path}")
                                 result = self.supabase.storage.from_(self.bucket_name).update(
                                     path=supabase_path,
                                     file=file_data,
@@ -137,19 +196,43 @@ class SupabaseStorage:
                                 )
                             
                             if hasattr(result, 'error') and result.error:
-                                error_msg = str(result.error)
-                                failed_uploads.append(f"{relative_path}: {error_msg}")
+                                error_msg = f"{relative_path}: {str(result.error)}"
+                                failed_uploads.append(error_msg)
+                                log_to_file_and_console(f"❌ FAILED: {error_msg}")
                             else:
                                 uploaded_files.append(str(relative_path))
+                                log_to_file_and_console(f"✅ SUCCESS: {relative_path}")
                                 
                         except Exception as upload_e:
-                            failed_uploads.append(f"{relative_path}: Upload exception - {str(upload_e)}")
+                            error_msg = f"{relative_path}: Upload exception - {str(upload_e)}"
+                            failed_uploads.append(error_msg)
+                            log_to_file_and_console(f"❌ EXCEPTION: {error_msg}")
                             
                     except Exception as file_e:
-                        failed_uploads.append(f"{relative_path}: File read error - {str(file_e)}")
+                        error_msg = f"{relative_path}: File read error - {str(file_e)}"
+                        failed_uploads.append(error_msg)
+                        log_to_file_and_console(f"❌ FILE ERROR: {error_msg}")
             
             # Report results
+            log_to_file_and_console(f"Upload complete: {len(uploaded_files)} success, {len(failed_uploads)} failed")
+            
             st.info(f"📊 Processing complete: {len(uploaded_files)} uploaded, {len(failed_uploads)} failed")
+            st.info(f"📋 Detailed upload log saved to: `{log_file.name}`")
+            
+            # Print summary to console for easy access
+            print(f"\n{'='*60}")
+            print(f"🎯 UPLOAD SUMMARY FOR SESSION {session_id}")
+            print(f"{'='*60}")
+            print(f"✅ Successful uploads: {len(uploaded_files)}")
+            print(f"❌ Failed uploads: {len(failed_uploads)}")
+            print(f"📁 Log file: {log_file}")
+            print(f"{'='*60}")
+            
+            if failed_uploads:
+                print(f"\n❌ FAILED UPLOADS:")
+                for i, failure in enumerate(failed_uploads, 1):
+                    print(f"  {i}. {failure}")
+                print(f"{'='*60}\n")
             
             if debug_info:
                 with st.expander(f"🔍 Debug: File processing details ({len(debug_info)} files)"):
