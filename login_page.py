@@ -18,14 +18,8 @@ def show_login_page() -> bool:
     Returns:
         True if user successfully authenticated, False otherwise
     """
+    print("🔧 DEBUG: show_login_page() called")
     auth_manager = get_auth_manager()
-    
-    # Page configuration
-    st.set_page_config(
-        page_title=f"{config.platform.platform_name} - Login",
-        page_icon="�",
-        layout="wide"
-    )
     
     # Header
     st.title(f"{config.platform.platform_name}")
@@ -128,8 +122,6 @@ def show_login_page() -> bool:
         - Automatic session management
         """)
     
-
-    
     # Footer
     st.markdown("---")
     st.markdown(
@@ -178,12 +170,18 @@ def require_authentication() -> CredentialConfig:
     """
     auth_manager = get_auth_manager()
     
+    print(f"🔧 DEBUG: require_authentication called, is_authenticated: {auth_manager.is_authenticated()}")
+    
     if not auth_manager.is_authenticated():
+        print("🔧 DEBUG: Not authenticated, showing login page")
         # Show login page and stop execution
         show_login_page()
         st.stop()
     
+    print("🔧 DEBUG: User authenticated, adding logout interface")
     # Add logout interface to sidebar
     show_logout_interface()
     
-    return auth_manager.get_current_config()
+    config = auth_manager.get_current_config()
+    print(f"🔧 DEBUG: Returning config for user: {config.username if config else 'None'}")
+    return config
