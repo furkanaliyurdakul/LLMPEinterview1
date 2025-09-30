@@ -152,6 +152,7 @@ if "condition_chosen" not in st.session_state:
 # Globals & constants
 # ───────────────────────────────────────────────────────────────
 DEV_MODE: bool = st.session_state.get("dev_mode", False)
+FAST_TEST_MODE: bool = st.session_state.get("fast_test_mode", False)
 TOPIC: str = config.course.course_title
 API_KEY: str = st.secrets["google"]["api_key"]
 
@@ -334,8 +335,8 @@ Thank you for helping us improve adaptive learning experiences!
 
 
     # — dev helper ---------------------------------------------------------
-    if DEV_MODE and not st.session_state.get("dev_setup_completed", False):
-        print("🔧 DEBUG: Setting up dev mode stubs")
+    if (DEV_MODE or FAST_TEST_MODE) and not st.session_state.get("dev_setup_completed", False):
+        print(f"🔧 DEBUG: Setting up {'dev mode' if DEV_MODE else 'fast test mode'} stubs")
         # minimal stubs used by Gemini_UI
         st.session_state.exported_images = [
             Path("uploads/ppt/picture/Slide_4 of Lecture8.png")
@@ -377,84 +378,88 @@ elif st.session_state.current_page == "profile_survey":
 
         # Build a *single* long profile string (if not yet done) --------------
         if not st.session_state.get("profile_text"):
-            # Collect answers from the survey widgets (mirrors the original logic)
-            survey = testui_profilesurvey  # alias
-            name = st.session_state.get("name", "")
-            age = st.session_state.get("age", "")
-            edu = st.session_state.get("education_level", "")
-            major = st.session_state.get("major", "")
-            work = st.session_state.get("work_exp", "")
-            hobbies = st.session_state.get("hobbies", "")
-            strongest = st.session_state.get("strongest_subject", "")
-            weakest = st.session_state.get("challenging_subject", "")
-            prof_level = st.session_state.get("proficiency_level", "")
+            # Skip profile building in dev/fast test mode since it's pre-loaded
+            if not (DEV_MODE or FAST_TEST_MODE):
+                # Collect answers from the survey widgets (mirrors the original logic)
+                survey = testui_profilesurvey  # alias
+                name = st.session_state.get("name", "")
+                if not name:  # Fallback for missing name
+                    name = "Test_User"
+                age = st.session_state.get("age", "")
+                edu = st.session_state.get("education_level", "")
+                major = st.session_state.get("major", "")
+                work = st.session_state.get("work_exp", "")
+                hobbies = st.session_state.get("hobbies", "")
+                strongest = st.session_state.get("strongest_subject", "")
+                weakest = st.session_state.get("challenging_subject", "")
+                prof_level = st.session_state.get("proficiency_level", "")
 
-            ratings = {s: st.session_state.get(s) for s in survey.subjects}
-            prio_ratings = {
-                p: st.session_state.get(p) for p in survey.learning_priorities
-            }
-            sel_strats = [
-                s for s in survey.learning_strategies if st.session_state.get(s)
-            ]
-            short_goals = [
-                g for g in survey.short_term_goals if st.session_state.get(f"short_{g}")
-            ]
-            long_goals = [
-                g for g in survey.long_term_goals if st.session_state.get(f"long_{g}")
-            ]
-            barriers = [
-                b for b in survey.barriers if st.session_state.get(f"barrier_{b}")
-            ]
-
-            profile_lines: List[str] = [
-                "Student Profile Survey Responses:",
-                "=" * 36,
-                "",
-                "Section 1: Academic and Background Information",
-                "-" * 45,
-                f"1. Name: {name}",
-                f"2. Age: {age}",
-                f"3. Study background: {edu}",
-                f"4. Major of education: {major}",
-                f"5. Work experience: {work}",
-                f"6. Hobbies or interests: {hobbies}",
-                "",
-                "7. Academic performance ranking (1=Weakest, 5=Strongest):",
-            ]
-            for i, (subj, rating) in enumerate(ratings.items()):
-                profile_lines.append(f"   {chr(65+i)}. {subj}: {rating}")
-
-            profile_lines.extend(
-                [
-                    "",
-                    f"8. Strongest Subject: {strongest}",
-                    f"9. Most Challenging Subject: {weakest}",
-                    "",
-                    "10. Learning priorities ranking (1=least important, 5=most important):",
+                ratings = {s: st.session_state.get(s) for s in survey.subjects}
+                prio_ratings = {
+                    p: st.session_state.get(p) for p in survey.learning_priorities
+                }
+                sel_strats = [
+                    s for s in survey.learning_strategies if st.session_state.get(s)
                 ]
-            )
-            for i, (prio, rating) in enumerate(prio_ratings.items()):
-                profile_lines.append(f"   {chr(65+i)}. {prio}: {rating}")
-
-            profile_lines.extend(
-                [
-                    "",
-                    f"11. Preferred learning strategy: {'; '.join(sel_strats)}",
-                    f"12. Current proficiency level: {prof_level}",
-                    f"13. Short-term academic goals: {'; '.join(short_goals)}",
-                    f"14. Long-term academic/career goals: {'; '.join(long_goals)}",
-                    f"15. Potential Barriers: {'; '.join(barriers)}",
+                short_goals = [
+                    g for g in survey.short_term_goals if st.session_state.get(f"short_{g}")
                 ]
-            )
-            profile_text = "\n".join(profile_lines)
-            st.session_state.profile_text = profile_text
+                long_goals = [
+                    g for g in survey.long_term_goals if st.session_state.get(f"long_{g}")
+                ]
+                barriers = [
+                    b for b in survey.barriers if st.session_state.get(f"barrier_{b}")
+                ]
 
-            # Persist original profile
-            profile_path = UPLOAD_DIR_PROFILE / f"{name.replace(' ', '_')}_profile.txt"
-            profile_path.write_text(profile_text, encoding="utf‑8")
+                profile_lines: List[str] = [
+                    "Student Profile Survey Responses:",
+                    "=" * 36,
+                    "",
+                    "Section 1: Academic and Background Information",
+                    "-" * 45,
+                    f"1. Name: {name}",
+                    f"2. Age: {age}",
+                    f"3. Study background: {edu}",
+                    f"4. Major of education: {major}",
+                    f"5. Work experience: {work}",
+                    f"6. Hobbies or interests: {hobbies}",
+                    "",
+                    "7. Academic performance ranking (1=Weakest, 5=Strongest):",
+                ]
+                for i, (subj, rating) in enumerate(ratings.items()):
+                    profile_lines.append(f"   {chr(65+i)}. {subj}: {rating}")
 
-            # Dict version for later use
-            st.session_state.profile_dict = parse_detailed_student_profile(profile_text)
+                profile_lines.extend(
+                    [
+                        "",
+                        f"8. Strongest Subject: {strongest}",
+                        f"9. Most Challenging Subject: {weakest}",
+                        "",
+                        "10. Learning priorities ranking (1=least important, 5=most important):",
+                    ]
+                )
+                for i, (prio, rating) in enumerate(prio_ratings.items()):
+                    profile_lines.append(f"   {chr(65+i)}. {prio}: {rating}")
+
+                profile_lines.extend(
+                    [
+                        "",
+                        f"11. Preferred learning strategy: {'; '.join(sel_strats)}",
+                        f"12. Current proficiency level: {prof_level}",
+                        f"13. Short-term academic goals: {'; '.join(short_goals)}",
+                        f"14. Long-term academic/career goals: {'; '.join(long_goals)}",
+                        f"15. Potential Barriers: {'; '.join(barriers)}",
+                    ]
+                )
+                profile_text = "\n".join(profile_lines)
+                st.session_state.profile_text = profile_text
+
+                # Persist original profile
+                profile_path = UPLOAD_DIR_PROFILE / f"{name.replace(' ', '_')}_profile.txt"
+                profile_path.write_text(profile_text, encoding="utf‑8")
+
+                # Dict version for later use
+                st.session_state.profile_dict = parse_detailed_student_profile(profile_text)
 
         st.success(f"Profile saved – proceed to the {LABEL} section.")
         if st.button(f"Continue to {LABEL}", use_container_width=True):
