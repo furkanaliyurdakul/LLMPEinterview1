@@ -41,16 +41,64 @@ class AuthenticationManager:
     def _initialize_credentials(self) -> Dict[str, CredentialConfig]:
         """Initialize available credentials for the platform."""
         return {
-            # Single credential type - can be shared accordingly
-            "participant": CredentialConfig(
-                username="participant",
-                password_hash=self._hash_password("LearningPlatform2025!"),
-                study_condition="personalised",  # Can be configured as needed
-                description="Platform Participant",
-                folder_prefix="participant_data",
+            # Personalised cohort participant
+            "personalised": CredentialConfig(
+                username="Participant1",
+                password_hash=self._hash_password("Participant1"),
+                study_condition="personalised",
+                description="Personalised Learning Participant",
+                folder_prefix="personalised_cohort",
                 dev_mode=False,
                 fast_test_mode=False,
                 upload_enabled=False
+            ),
+            
+            # Generic cohort participant  
+            "generic": CredentialConfig(
+                username="Participant2",
+                password_hash=self._hash_password("Participant2"),
+                study_condition="generic",
+                description="Generic Learning Participant",
+                folder_prefix="generic_cohort",
+                dev_mode=False,
+                fast_test_mode=False,
+                upload_enabled=False
+            ),
+            
+            # Development mode - full access
+            "dev": CredentialConfig(
+                username="dev",
+                password_hash=self._hash_password("dev"),
+                study_condition="personalised",  # Default for dev mode
+                description="Development Mode - Full Access",
+                folder_prefix="dev_testing",
+                dev_mode=True,
+                fast_test_mode=False,
+                upload_enabled=True
+            ),
+            
+            # Fast test mode - quick tutorial
+            "fasttest": CredentialConfig(
+                username="fasttest",
+                password_hash=self._hash_password("fasttest"),
+                study_condition="personalised",  # Default for demo
+                description="Fast Test Mode - Quick Tutorial",
+                folder_prefix="demo_testing",
+                dev_mode=False,
+                fast_test_mode=True,
+                upload_enabled=False
+            ),
+            
+            # Combined dev + fast test mode for testing
+            "devfast": CredentialConfig(
+                username="devfast",
+                password_hash=self._hash_password("devfast"),
+                study_condition="personalised",  # Default for combined mode
+                description="Development + Fast Test Mode",
+                folder_prefix="dev_fast_testing",
+                dev_mode=True,
+                fast_test_mode=True,
+                upload_enabled=True
             )
         }
     
