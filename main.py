@@ -334,7 +334,7 @@ Thank you for helping us improve adaptive learning experiences!
 
 
     # — dev helper ---------------------------------------------------------
-    if DEV_MODE:
+    if DEV_MODE and not st.session_state.get("dev_setup_completed", False):
         print("🔧 DEBUG: Setting up dev mode stubs")
         # minimal stubs used by Gemini_UI
         st.session_state.exported_images = [
@@ -351,6 +351,7 @@ Thank you for helping us improve adaptive learning experiences!
         st.session_state.profile_dict  = parse_detailed_student_profile(profile_txt)
 
         st.session_state.selected_slide = "Slide 1"
+        st.session_state["dev_setup_completed"] = True
         st.rerun()
 
     if st.button(
