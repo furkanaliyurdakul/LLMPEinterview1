@@ -1,92 +1,76 @@
-# Authentication Credentials Reference
+# Platform Credentials
 
-## Study Participant Credentials
+This document contains the login credentials for the AI Learning Platform.
+
+## Participant Credentials
 
 ### Personalised Learning Cohort
-- **Username:** `personalised_p001` | **Password:** `PersonalisedCohort2025!`
-- **Username:** `personalised_p002` | **Password:** `PersonalisedCohort2025!`  
-- **Username:** `personalised_p003` | **Password:** `PersonalisedCohort2025!`
-
-**Configuration:**
-- Study condition: Personalised explanations
-- Data folder: `personalised_cohort/`
-- Dev mode: ❌ | Fast test: ❌ | Upload enabled: ❌
+- **Username:** `Participant1`
+- **Password:** `Participant1`
+- **Study Condition:** Personalised learning experience
+- **Features:** Standard participant interface (no session info displayed)
 
 ### Generic Learning Cohort  
-- **Username:** `generic_g001` | **Password:** `GenericCohort2025!`
-- **Username:** `generic_g002` | **Password:** `GenericCohort2025!`
-- **Username:** `generic_g003` | **Password:** `GenericCohort2025!`
+- **Username:** `Participant2`
+- **Password:** `Participant2`
+- **Study Condition:** Generic learning experience
+- **Features:** Standard participant interface (no session info displayed)
 
-**Configuration:**
-- Study condition: Generic explanations  
-- Data folder: `generic_cohort/`
-- Dev mode: ❌ | Fast test: ❌ | Upload enabled: ❌
-
-## Research Team Credentials
+## Non-Participant Credentials
 
 ### Development Mode
-- **Username:** `dev_researcher` | **Password:** `DevMode2025Research!`
+- **Username:** `dev`
+- **Password:** `dev`
+- **Features:** 
+  - Full development access
+  - File upload capabilities
+  - Development tools enabled
+  - Session info displayed in sidebar
 
-**Configuration:**
-- Study condition: Personalised (with sidebar toggle)
-- Data folder: `dev_testing/`  
-- Dev mode: ✅ | Fast test: ❌ | Upload enabled: ✅
+### Fast Test Mode
+- **Username:** `fasttest`
+- **Password:** `fasttest`
+- **Features:**
+  - Quick tutorial/demo mode
+  - Fast test mode active
+  - Session info displayed in sidebar
 
-### Fast Demo Mode
-- **Username:** `fast_demo` | **Password:** `FastDemo2025!`
-
-**Configuration:**
-- Study condition: Personalised
-- Data folder: `demo_testing/`
-- Dev mode: ❌ | Fast test: ✅ | Upload enabled: ❌
-
-### Combined Dev + Fast Test
-- **Username:** `dev_fast_test` | **Password:** `DevFastTest2025!`
-
-**Configuration:**
-- Study condition: Personalised (with sidebar toggle)
-- Data folder: `dev_fast_testing/`
-- Dev mode: ✅ | Fast test: ✅ | Upload enabled: ✅
-
-### Administrator Access
-- **Username:** `admin_furkan` | **Password:** `AdminAccess2025Furkan!`
-
-**Configuration:**
-- Study condition: Personalised (with sidebar toggle)
-- Data folder: `admin_testing/`
-- Dev mode: ✅ | Fast test: ❌ | Upload enabled: ✅
+### Development + Fast Test Mode
+- **Username:** `devfast`
+- **Password:** `devfast`
+- **Features:**
+  - Combined development and fast test mode
+  - All development features enabled
+  - Fast test mode active
+  - File upload capabilities
+  - Session info displayed in sidebar
 
 ## Data Organization
 
-All session data is automatically organized in both local storage and Supabase:
+Session data is organized by credential type:
 
 ```
 output/
-├── personalised_cohort/          # Personalised study participants
-│   ├── 20250930_143022_Bailey_Smith/
-│   └── 20250930_144115_Morgan_Chen/
-├── generic_cohort/               # Generic study participants  
-│   ├── 20250930_145203_Alex_Johnson/
-│   └── 20250930_150344_Jordan_Lee/
-├── dev_testing/                  # Development sessions
-├── demo_testing/                 # Fast demo sessions
-├── dev_fast_testing/            # Combined dev+demo sessions
-└── admin_testing/               # Administrator sessions
+├── personalised_cohort/          # Participant1 sessions
+├── generic_cohort/               # Participant2 sessions
+├── dev_testing/                  # dev credential sessions
+├── demo_testing/                 # fasttest credential sessions
+└── dev_fast_testing/            # devfast credential sessions
 ```
 
-## Security Features
+## Usage Notes
 
-- ✅ **Secure password hashing** with study-specific salt
-- ✅ **Automatic session cleanup** on logout  
-- ✅ **Credential-based access control** with role permissions
-- ✅ **Data segregation** by credential type for analysis
-- ✅ **Session expiration** - requires re-login for each session
+- **Participants** (Participant1, Participant2): Experience a clean interface without technical session information
+- **Non-participants** (dev, fasttest, devfast): See session information and have access to additional features
+- Fast test mode is now activated only through credentials, not manual buttons
+- Development mode enables file upload functionality and development tools
 
-## Usage Instructions
+## Security
 
-1. **For study participants:** Use assigned credentials only
-2. **For development:** Use `dev_researcher` or `dev_fast_test` 
-3. **For demos:** Use `fast_demo` for quick demonstrations
-4. **For admin tasks:** Use `admin_furkan` for full access
+- All passwords are hashed with platform-specific salt
+- Session management is handled automatically
+- Credentials determine access level and feature availability
+- Data is organized by credential type for proper separation
 
-⚠️ **Important:** All passwords are case-sensitive and must be entered exactly as shown.
+---
+**⚠️ Important:** Keep this file secure and do not commit it to version control.

@@ -27,6 +27,9 @@ env/
 # Streamlit secrets
 .streamlit/secrets.toml
 
+# Credentials and sensitive files
+credentials.md
+
 # Logs
 *.log
 
