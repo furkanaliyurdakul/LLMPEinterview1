@@ -152,6 +152,22 @@ class SupabaseStorage:
             print("❌ Upload test failed")
             return False
     
+    def _get_credential_folder_prefix(self) -> str:
+        """Get folder prefix based on current authentication credentials."""
+        try:
+            # Import here to avoid circular imports
+            from authentication import get_auth_manager
+            auth_manager = get_auth_manager()
+            config = auth_manager.get_current_config()
+            
+            if config:
+                return config.folder_prefix
+            else:
+                return "unknown_user"
+        except (ImportError, AttributeError):
+            # Fallback for cases where authentication isn't available
+            return "legacy_session"
+    
     def upload_session_files(self, session_manager) -> bool:
         """Upload all local session files to Supabase Storage, maintaining original structure."""
         if not self.connected:
@@ -170,15 +186,20 @@ class SupabaseStorage:
                 logger.error(error_msg)
                 st.error(error_msg)
                 return False
-                
+            
+            # Get credential-based folder organization
+            folder_prefix = self._get_credential_folder_prefix()
+            
             session_info = session_manager.get_session_info()
             session_id = session_info["session_id"]
             session_dir = Path(session_manager.session_dir)
             
             logger.info(f"Session ID: {session_id}")
             logger.info(f"Session directory: {session_dir}")
+            logger.info(f"Credential folder prefix: {folder_prefix}")
             print(f"📁 UPLOAD DEBUG: Session ID = {session_id}")
             print(f"📁 UPLOAD DEBUG: Session directory = {session_dir}")
+            print(f"🏷️ UPLOAD DEBUG: Credential folder = {folder_prefix}")
             
             if not session_dir.exists():
                 error_msg = f"Session directory not found: {session_dir}"
@@ -215,9 +236,9 @@ class SupabaseStorage:
                     # Calculate relative path from session directory
                     relative_path = file_path.relative_to(session_dir)
                     
-                    # Create Supabase path: sessions/{session_id}/{relative_path}
+                    # Create credential-organized Supabase path: {credential_folder}/sessions/{session_id}/{relative_path}
                     # Convert Windows paths to forward slashes for Supabase
-                    supabase_path = f"sessions/{session_id}/{relative_path}".replace("\\", "/")
+                    supabase_path = f"{folder_prefix}/sessions/{session_id}/{relative_path}".replace("\\", "/")
                     
                     # Get file size for debugging
                     file_size = file_path.stat().st_size

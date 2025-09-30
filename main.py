@@ -20,6 +20,10 @@ import atexit
 import json
 import streamlit as st
 
+# ── Authentication Check (MUST BE FIRST) ──────────────────────
+from login_page import require_authentication
+credential_config = require_authentication()
+
 LABEL: str = "Learning" # internal flag stays in use_personalisation
 st.set_page_config(page_title=f"{LABEL} Platform", layout="wide")
 atexit.register(lambda: get_learning_logger().save_logs(force=True))
@@ -81,23 +85,27 @@ if "_page_timer" not in st.session_state:
     
     page_timer_start("home")
 
-# ── study-condition toggle ────────────────────────────────────────────
-# True  -> personalised explanations
-# False -> generic explanations
-DEFAULT_PERSONALISED: bool = False            # ← change this for each study run
-
-# ---------------------------------------------------------------------
-# set study condition from the constant above (runs once per session)
-# ---------------------------------------------------------------------
+# ── Authentication-based Configuration ─────────────────────────────────
+# Study condition and modes are now set based on login credentials
 if "condition_chosen" not in st.session_state:
-    st.session_state["use_personalisation"] = DEFAULT_PERSONALISED
-    st.session_state["condition_chosen"]    = True
-    sm.condition = "personalised" if DEFAULT_PERSONALISED else "generic"
+    # Get condition from authentication system
+    from authentication import get_auth_manager
+    auth_manager = get_auth_manager()
+    condition_override = auth_manager.get_study_condition_override()
+    
+    if condition_override is not None:
+        st.session_state["use_personalisation"] = condition_override
+        st.session_state["condition_chosen"] = True
+        sm.condition = "personalised" if condition_override else "generic"
+    
+    # Set special modes based on credentials
+    st.session_state["dev_mode"] = credential_config.dev_mode
+    st.session_state["fast_test_mode"] = credential_config.fast_test_mode
 
 # ───────────────────────────────────────────────────────────────
 # Globals & constants
 # ───────────────────────────────────────────────────────────────
-DEV_MODE: bool = False
+DEV_MODE: bool = st.session_state.get("dev_mode", False)
 TOPIC: str = "Introduction to Cancer Biology"
 API_KEY: str = st.secrets["google"]["api_key"]
 

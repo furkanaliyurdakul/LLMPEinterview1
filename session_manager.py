@@ -76,17 +76,43 @@ class SessionManager:
         os.makedirs(self.output_dir, exist_ok=True)
 
         self.condition = condition or "personalised"  # default
+        
+        # Get credential-based folder prefix if available
+        self.folder_prefix = self._get_credential_folder_prefix()
 
         # Generate session ID if not already exists
         if not hasattr(self, "session_id"):
             self.create_new_session()
+    
+    def _get_credential_folder_prefix(self) -> str:
+        """Get folder prefix based on current authentication credentials."""
+        try:
+            # Import here to avoid circular imports
+            from authentication import get_auth_manager
+            auth_manager = get_auth_manager()
+            config = auth_manager.get_current_config()
+            
+            if config:
+                return config.folder_prefix
+            else:
+                return "unknown_user"
+        except (ImportError, AttributeError):
+            # Fallback for cases where authentication isn't available
+            return "legacy_session"
 
     def create_new_session(self):
         """Create a new session with timestamp and fake name as identifier."""
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         fake_name = self._generate_fake_name()
+        
+        # Create credential-based session ID
         self.session_id = f"{timestamp}_{fake_name}"
-        self.session_dir = os.path.join(self.output_dir, self.session_id)
+        
+        # Create credential-organized directory structure
+        credential_dir = os.path.join(self.output_dir, self.folder_prefix)
+        os.makedirs(credential_dir, exist_ok=True)
+        
+        self.session_dir = os.path.join(credential_dir, self.session_id)
         os.makedirs(self.session_dir, exist_ok=True)
 
         # Create subdirectories for different types of data
