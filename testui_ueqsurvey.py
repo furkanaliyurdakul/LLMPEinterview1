@@ -179,6 +179,9 @@ if st.button("Submit Responses"):
     # --- all items answered: continue as before ---------------------
     st.success("Thank you for completing the User Experience Questionnaire!")
 
+    # Mark UEQ as submitted
+    st.session_state["ueq_submitted"] = True
+
     answers_dict = {
         key: entry["value"]  # 1‑7 scale value
         for key, entry in st.session_state.responses.items()
@@ -228,6 +231,25 @@ comment_txt = st.text_area(
 if st.button("Save comment", key="save_extra_comment"):
     if comment_txt.strip():
         st.session_state["saved_comment"] = comment_txt.strip()
-        st.success("Your comment has been saved!")
+        
+        # If UEQ has already been submitted, re-save it with the new comment
+        if "ueq_submitted" in st.session_state and st.session_state["ueq_submitted"]:
+            # Re-create the answers dict and benchmark
+            answers_dict = {
+                key: entry["value"]
+                for key, entry in st.session_state.responses.items()
+                if entry["value"] is not None
+            }
+            bench = evaluate_ueq(answers_dict)
+            
+            # Re-save UEQ with the new comment
+            txt_path = session_manager.save_ueq(
+                answers=answers_dict,
+                benchmark=bench,
+                free_text=st.session_state.get("saved_comment"),
+            )
+            st.success("Your comment has been saved and added to your UEQ responses!")
+        else:
+            st.success("Your comment has been saved!")
     else:
         st.warning("Please enter a comment before saving.")

@@ -791,7 +791,10 @@ elif st.session_state.current_page == "personalized_learning":
                     if "student profile" in missing_items and len(missing_items) == 1:
                         st.info("Complete the Student Profile Survey first to enable explanation generation.")
                     else:
-                        st.info(f"⏳ Loading course content... Missing: {', '.join(missing_items)}")
+                        if DEV_MODE:
+                            st.info(f"⏳ Loading course content... Missing: {', '.join(missing_items)}")
+                        else:
+                            st.info("⏳ Loading course content...")
                 else:
                     st.info("⏳ Preparing explanation generator...")
 
@@ -814,9 +817,12 @@ elif st.session_state.current_page == "personalized_learning":
                 
                 # Check if file exists
                 if not slide_path.exists():
-                    st.error(f"Slide not found: {slide_path.resolve()}")
-                    st.write(f"Current working directory: {Path.cwd()}")
-                    st.write(f"Looking for: {slide_path}")
+                    if DEV_MODE:
+                        st.error(f"Slide not found: {slide_path.resolve()}")
+                        st.write(f"Current working directory: {Path.cwd()}")
+                        st.write(f"Looking for: {slide_path}")
+                    else:
+                        st.error("Slide content is currently unavailable.")
                     st.stop()
                 
                 try:
@@ -837,7 +843,10 @@ elif st.session_state.current_page == "personalized_learning":
                     st.video(video_bytes)
                     st.caption(f"{config.course.course_title} - Full Lecture")
                 except Exception as e:
-                    st.error(f"Error loading video: {e}")
+                    if DEV_MODE:
+                        st.error(f"Error loading video: {e}")
+                    else:
+                        st.warning("Video content is temporarily unavailable.")
             else:
                 st.info("Lecture recording will appear here when available")
 
@@ -983,23 +992,27 @@ elif st.session_state.current_page == "completion":
                 session_id = session_info["session_id"]
                 
                 # Upload all session files
-                success = storage.upload_session_files(sm)
+                success = storage.upload_session_files(sm, DEV_MODE)
                 
                 if success:
                     st.success("✅ Your responses have been successfully processed and uploaded!")
-                    st.info(f"Session ID: `{session_id}`")
+                    if DEV_MODE:
+                        st.info(f"Session ID: `{session_id}`")
                 else:
                     st.info("✅ Your responses have been saved locally.")
-                    st.warning("⚠️ Cloud backup experienced some issues, but your data is secure.")
+                    if DEV_MODE:
+                        st.warning("⚠️ Cloud backup experienced some issues, but your data is secure.")
                 
             except Exception as e:
                 st.info("✅ Your responses have been saved locally.")
-                st.warning(f"⚠️ Upload processing had issues: {str(e)}")
+                if DEV_MODE:
+                    st.warning(f"⚠️ Upload processing had issues: {str(e)}")
     else:
         # Already processed - show completion message
         st.success("✅ Your responses have been processed!")
-        session_info = sm.get_session_info()
-        st.info(f"Session ID: `{session_info['session_id']}`")
+        if DEV_MODE:
+            session_info = sm.get_session_info()
+            st.info(f"Session ID: `{session_info['session_id']}`")
     
     st.markdown("---")
     

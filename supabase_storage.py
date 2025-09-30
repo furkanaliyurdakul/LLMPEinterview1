@@ -36,7 +36,8 @@ class SupabaseStorage:
             self.ensure_bucket_exists()
             
         except Exception as e:
-            st.error(f"Failed to connect to Supabase: {e}")
+            # Only show technical errors in dev mode
+            # In production, silently fail - uploads will be handled gracefully later
             self.connected = False
     
     def ensure_bucket_exists(self) -> bool:
@@ -108,7 +109,6 @@ class SupabaseStorage:
                 error_msg = f"Upload test failed: {test_result.error}"
                 logger.error(error_msg)
                 print(f"❌ UPLOAD TEST: {error_msg}")
-                st.error(error_msg)
                 return False
                 
             # Clean up test file
@@ -121,7 +121,6 @@ class SupabaseStorage:
             error_msg = f"Upload test failed: {e}"
             logger.error(error_msg)
             print(f"❌ UPLOAD TEST: {error_msg}")
-            st.error(error_msg)
             return False
     
     def manual_test(self):
@@ -168,12 +167,12 @@ class SupabaseStorage:
             # Fallback for cases where authentication isn't available
             return "legacy_session"
     
-    def upload_session_files(self, session_manager) -> bool:
+    def upload_session_files(self, session_manager, dev_mode: bool = False) -> bool:
         """Upload all local session files to Supabase Storage, maintaining original structure."""
         if not self.connected:
             error_msg = "Supabase not connected - cannot save data"
             logger.error(error_msg)
-            st.error(error_msg)
+            # Don't show technical errors to participants
             return False
             
         try:
@@ -184,7 +183,7 @@ class SupabaseStorage:
             if not self.test_connection():
                 error_msg = "Supabase upload test failed - uploads will not work"
                 logger.error(error_msg)
-                st.error(error_msg)
+                # Don't show technical errors to participants
                 return False
             
             # Get credential-based folder organization
@@ -204,7 +203,7 @@ class SupabaseStorage:
             if not session_dir.exists():
                 error_msg = f"Session directory not found: {session_dir}"
                 logger.error(error_msg)
-                st.error(error_msg)
+                # Don't show technical errors to participants
                 return False
             
             uploaded_files = []
@@ -306,9 +305,6 @@ class SupabaseStorage:
             # Report results
             log_to_file_and_console(f"Upload complete: {len(uploaded_files)} success, {len(failed_uploads)} failed")
             
-            st.info(f"📊 Processing complete: {len(uploaded_files)} uploaded, {len(failed_uploads)} failed")
-            st.info(f"📋 Detailed upload log saved to: `{log_file.name}`")
-            
             # Print summary to console for easy access
             print(f"\n{'='*60}")
             print(f"🎯 UPLOAD SUMMARY FOR SESSION {session_id}")
@@ -324,32 +320,46 @@ class SupabaseStorage:
                     print(f"  {i}. {failure}")
                 print(f"{'='*60}\n")
             
-            if debug_info:
-                with st.expander(f"🔍 Debug: File processing details ({len(debug_info)} files)"):
-                    for info in debug_info:
-                        st.text(info)
+            # Show technical details only in dev mode
+            if dev_mode:
+                st.info(f"📊 Processing complete: {len(uploaded_files)} uploaded, {len(failed_uploads)} failed")
+                st.info(f"📋 Detailed upload log saved to: `{log_file.name}`")
+                
+                if debug_info:
+                    with st.expander(f"🔍 Debug: File processing details ({len(debug_info)} files)"):
+                        for info in debug_info:
+                            st.text(info)
             
             if uploaded_files:
                 st.success(f"🎉 Successfully uploaded {len(uploaded_files)} files to cloud storage!")
                 st.success("✅ All session data has been preserved for research analysis.")
-                st.info(f"Session ID: {session_id}")
+                if dev_mode:
+                    st.info(f"Session ID: {session_id}")
                 
-                # Show uploaded files in expander
-                with st.expander(f"📁 View uploaded files ({len(uploaded_files)} files)"):
-                    for file_name in sorted(uploaded_files):
-                        st.text(f"✅ {file_name}")
+                # Show uploaded files in expander (only in dev mode)
+                if dev_mode:
+                    with st.expander(f"📁 View uploaded files ({len(uploaded_files)} files)"):
+                        for file_name in sorted(uploaded_files):
+                            st.text(f"✅ {file_name}")
             
             if failed_uploads:
-                st.error(f"⚠️ {len(failed_uploads)} files failed to upload:")
-                with st.expander("❌ View failed uploads (click to expand)"):
-                    for failure in failed_uploads:
-                        st.text(f"❌ {failure}")
+                if dev_mode:
+                    st.error(f"⚠️ {len(failed_uploads)} files failed to upload:")
+                    with st.expander("❌ View failed uploads (click to expand)"):
+                        for failure in failed_uploads:
+                            st.text(f"❌ {failure}")
+                else:
+                    st.warning("⚠️ Some files experienced upload issues, but your data is secure.")
             
             return len(uploaded_files) > 0
                 
         except Exception as e:
-            st.error(f"Error uploading session files to Supabase: {e}")
-            st.error(f"Traceback: {traceback.format_exc()}")
+            # Log technical errors but don't show to participants
+            logger.error(f"Error uploading session files to Supabase: {e}")
+            logger.error(f"Traceback: {traceback.format_exc()}")
+            if dev_mode:
+                st.error(f"Error uploading session files to Supabase: {e}")
+                st.error(f"Traceback: {traceback.format_exc()}")
             return False
 
 
